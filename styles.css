@@ -173,6 +173,14 @@ body {
 
 /* 선택지 */
 .options { display: flex; flex-direction: column; gap: 10px; }
+.options.image-options {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+}
+.opt-img { display: block; max-width: 100%; height: auto; border-radius: 6px; }
+.image-options .option { align-items: center; }
+@media (max-width: 520px) {
+  .options.image-options { grid-template-columns: 1fr; }
+}
 .option {
   display: flex; align-items: flex-start; gap: 12px;
   background: #fff; border: 1.5px solid var(--border);

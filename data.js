@@ -54,14 +54,12 @@ const QUESTIONS = {
       type: "mc",
       stem:
         "전등 아래서 책을 볼 때, 책을 보는 과정을 나타낸 빛의 경로로 옳은 것은?",
-      figureNote:
-        "① ~ ⑤ 보기는 빛의 경로를 나타낸 그림입니다.",
       options: [
-        { label: "①", text: "전등 → 책 → 눈" },
-        { label: "②", text: "눈 → 책 → 전등" },
-        { label: "③", text: "전등 → 눈 → 책" },
-        { label: "④", text: "책 → 전등 → 눈" },
-        { label: "⑤", text: "눈 → 전등 → 책" },
+        { label: "①", image: "assets/figures/q01_opt1.png" },
+        { label: "②", image: "assets/figures/q01_opt2.png" },
+        { label: "③", image: "assets/figures/q01_opt3.png" },
+        { label: "④", image: "assets/figures/q01_opt4.png" },
+        { label: "⑤", image: "assets/figures/q01_opt5.png" },
       ],
       answer: "①",
       explanation:

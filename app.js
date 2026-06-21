@@ -164,12 +164,17 @@ function renderQuestion() {
 
   let body = "";
   if (q.type === "mc" || q.type === "multi") {
-    body = `<div class="options">${q.options
+    const hasImageOpts = q.options.some((o) => o.image);
+    body = `<div class="options${hasImageOpts ? " image-options" : ""}">${q.options
       .map(
         (o) => `
         <button class="option" data-label="${o.label}">
           <span class="opt-label">${o.label}</span>
-          <span class="opt-text">${escapeHtml(o.text)}</span>
+          <span class="opt-text">${
+            o.image
+              ? `<img class="opt-img" src="${o.image}" alt="보기 ${o.label}" loading="lazy" />`
+              : escapeHtml(o.text)
+          }</span>
         </button>`
       )
       .join("")}</div>`;
