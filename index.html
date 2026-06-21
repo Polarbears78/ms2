@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>과학 단원 평가</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <h1 class="logo" id="homeLink">📘 과학 단원 평가</h1>
+      <nav class="breadcrumb" id="breadcrumb"></nav>
+    </div>
+  </header>
+
+  <main class="app-main" id="app">
+    <!-- 단원 선택 화면 -->
+    <section id="view-units" class="view"></section>
+
+    <!-- 평가 목록 화면 -->
+    <section id="view-assessments" class="view hidden"></section>
+
+    <!-- 문제 풀이 화면 -->
+    <section id="view-quiz" class="view hidden"></section>
+
+    <!-- 결과 화면 -->
+    <section id="view-result" class="view hidden"></section>
+  </main>
+
+  <footer class="app-footer">
+    <p>중학교 과학 · 단원 평가 학습 웹앱</p>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
