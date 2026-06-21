@@ -126,6 +126,7 @@ function normalize(str) {
     .toString()
     .replace(/\s/g, "")
     .replace(/[.,·]/g, "")
+    .replace(/[()（）]/g, "")
     .replace(/도/g, "°")
     .toLowerCase();
 }
