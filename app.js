@@ -165,6 +165,10 @@ function renderQuestion() {
   let body = "";
   if (q.type === "mc" || q.type === "multi") {
     const hasImageOpts = q.options.some((o) => o.image);
+    const hint =
+      q.type === "multi"
+        ? `<p class="select-hint">정답 ${q.answer.length}개를 고른 뒤 확인을 누르세요.</p>`
+        : `<p class="select-hint">보기를 선택한 뒤 확인을 누르세요.</p>`;
     body = `<div class="options${hasImageOpts ? " image-options" : ""}">${q.options
       .map(
         (o) => `
@@ -177,7 +181,9 @@ function renderQuestion() {
           }</span>
         </button>`
       )
-      .join("")}</div>`;
+      .join("")}</div>
+      ${hint}
+      <button class="btn primary confirm-btn" id="confirmBtn" disabled>확인</button>`;
   } else if (q.type === "short") {
     body = `
       <div class="answer-input">
@@ -216,9 +222,13 @@ function renderQuestion() {
 
   // 이벤트 연결
   if (q.type === "mc" || q.type === "multi") {
+    state._sel = []; // 현재 문제의 선택(아직 미채점)
     views.quiz.querySelectorAll(".option").forEach((btn) => {
-      btn.addEventListener("click", () => handleChoice(btn.dataset.label));
+      btn.addEventListener("click", () => toggleSelect(btn.dataset.label));
     });
+    document
+      .getElementById("confirmBtn")
+      .addEventListener("click", () => submitChoice());
   } else if (q.type === "short") {
     const input = document.getElementById("shortAnswer");
     const submit = document.getElementById("submitShort");
@@ -265,6 +275,10 @@ function restoreAnswer(q, saved) {
       else if (labels.includes(lbl)) btn.classList.add("wrong");
       btn.disabled = true;
     });
+    const confirmBtn = document.getElementById("confirmBtn");
+    if (confirmBtn) confirmBtn.classList.add("hidden");
+    const hint = views.quiz.querySelector(".select-hint");
+    if (hint) hint.classList.add("hidden");
     showFeedback(q, saved.correct);
   } else if (q.type === "short") {
     const input = document.getElementById("shortAnswer");
@@ -280,35 +294,49 @@ function restoreAnswer(q, saved) {
   }
 }
 
-function handleChoice(label) {
+// 보기 선택(채점하지 않고 선택만 토글)
+function toggleSelect(label) {
   const q = state.questions[state.index];
-  if (state.answers[state.index]) return; // 이미 제출함
+  if (state.answers[state.index]) return; // 이미 채점됨
 
-  let value, correct;
+  const sel = state._sel || [];
   if (q.type === "multi") {
-    // 복수 정답: 클릭으로 토글, 정답 개수만큼 선택해야 채점
-    const sel = state._multiSel || [];
     const i = sel.indexOf(label);
     if (i >= 0) sel.splice(i, 1);
     else sel.push(label);
-    state._multiSel = sel;
-
-    views.quiz.querySelectorAll(".option").forEach((b) => {
-      b.classList.toggle("selected", sel.includes(b.dataset.label));
-    });
-    // 정답 개수만큼 고르면 자동 채점
-    if (sel.length === q.answer.length) {
-      value = [...sel].sort();
-      correct = arraysEqual(value, [...q.answer].sort());
-      finalizeChoice(q, value, correct);
-      state._multiSel = null;
+  } else {
+    // 객관식: 한 개만 선택(다시 누르면 해제)
+    if (sel.length === 1 && sel[0] === label) sel.length = 0;
+    else {
+      sel.length = 0;
+      sel.push(label);
     }
-    return;
   }
+  state._sel = sel;
 
-  value = label;
-  correct = label === q.answer;
+  views.quiz.querySelectorAll(".option").forEach((b) => {
+    b.classList.toggle("selected", sel.includes(b.dataset.label));
+  });
+  document.getElementById("confirmBtn").disabled = sel.length === 0;
+}
+
+// 확인 버튼: 현재 선택을 채점
+function submitChoice() {
+  const q = state.questions[state.index];
+  if (state.answers[state.index]) return;
+  const sel = state._sel || [];
+  if (sel.length === 0) return;
+
+  let value, correct;
+  if (q.type === "multi") {
+    value = [...sel].sort();
+    correct = arraysEqual(value, [...q.answer].sort());
+  } else {
+    value = sel[0];
+    correct = value === q.answer;
+  }
   finalizeChoice(q, value, correct);
+  state._sel = [];
 }
 
 function finalizeChoice(q, value, correct) {
@@ -322,6 +350,10 @@ function finalizeChoice(q, value, correct) {
     if (correctSet.includes(lbl)) btn.classList.add("correct");
     else if (labels.includes(lbl)) btn.classList.add("wrong");
   });
+  const confirmBtn = document.getElementById("confirmBtn");
+  if (confirmBtn) confirmBtn.classList.add("hidden");
+  const hint = views.quiz.querySelector(".select-hint");
+  if (hint) hint.classList.add("hidden");
   showFeedback(q, correct);
 }
 
