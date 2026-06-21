@@ -151,9 +151,16 @@ function renderQuestion() {
 
   const progressPct = Math.round((index / questions.length) * 100);
 
-  const figure = q.figureNote
-    ? `<div class="figure-note">🖼️ ${q.figureNote}</div>`
-    : "";
+  // 그림: q.image(이미지 파일 경로)가 있으면 이미지를, 없으면 안내 문구를 표시
+  let figure = "";
+  if (q.image) {
+    figure = `<figure class="q-figure">
+        <img src="${q.image}" alt="${escapeHtml(q.topic)} 그림" loading="lazy" />
+        ${q.figureNote ? `<figcaption>${escapeHtml(q.figureNote)}</figcaption>` : ""}
+      </figure>`;
+  } else if (q.figureNote) {
+    figure = `<div class="figure-note">🖼️ ${q.figureNote}</div>`;
+  }
 
   let body = "";
   if (q.type === "mc" || q.type === "multi") {
