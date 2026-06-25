@@ -82,15 +82,17 @@ function renderAssessments(unitId) {
     .map((aid) => {
       const a = ASSESSMENTS[aid];
       const total = QUESTIONS[a.questions].length;
+      const locked = a.password && !unlockedAssessments.has(aid);
       return `
         <button class="assessment-card" data-assessment="${a.id}">
-          <div class="assessment-icon">📝</div>
+          <div class="assessment-icon">${locked ? "🔒" : "📝"}</div>
           <div class="assessment-body">
             <h3>${a.title}</h3>
             <p class="muted">${a.subtitle}</p>
             <span class="q-count">총 ${total}문항</span>
+            ${a.password ? `<span class="lock-tag">${locked ? "🔒 비밀번호 필요" : "🔓 잠금 해제됨"}</span>` : ""}
           </div>
-          <span class="start-arrow">시작 →</span>
+          <span class="start-arrow">${locked ? "잠금 →" : "시작 →"}</span>
         </button>`;
     })
     .join("");
@@ -103,9 +105,70 @@ function renderAssessments(unitId) {
     <div class="assessment-list">${list}</div>`;
 
   views.assessments.querySelectorAll(".assessment-card").forEach((btn) => {
-    btn.addEventListener("click", () => startQuiz(btn.dataset.assessment));
+    btn.addEventListener("click", () => openAssessment(btn.dataset.assessment));
   });
   showView("assessments");
+}
+
+// 비밀번호가 걸린 평가는 잠금 해제 후 시작
+const unlockedAssessments = new Set();
+
+function openAssessment(assessmentId) {
+  const a = ASSESSMENTS[assessmentId];
+  if (a.password && !unlockedAssessments.has(assessmentId)) {
+    showPasswordPrompt(assessmentId);
+  } else {
+    startQuiz(assessmentId);
+  }
+}
+
+function showPasswordPrompt(assessmentId) {
+  const a = ASSESSMENTS[assessmentId];
+  // 기존 모달 제거
+  const old = document.getElementById("pwOverlay");
+  if (old) old.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "pwOverlay";
+  overlay.className = "pw-overlay";
+  overlay.innerHTML = `
+    <div class="pw-modal" role="dialog" aria-modal="true">
+      <div class="pw-icon">🔒</div>
+      <h3>${escapeHtml(a.title)}</h3>
+      <p class="muted">이 평가는 비밀번호가 필요합니다.</p>
+      <input type="password" id="pwInput" inputmode="numeric" placeholder="비밀번호 입력" autocomplete="off" />
+      <p class="pw-error hidden" id="pwError">비밀번호가 올바르지 않습니다.</p>
+      <div class="pw-actions">
+        <button class="btn ghost" id="pwCancel">취소</button>
+        <button class="btn primary" id="pwSubmit">확인</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  const input = document.getElementById("pwInput");
+  const error = document.getElementById("pwError");
+  const close = () => overlay.remove();
+  const submit = () => {
+    if (input.value === String(a.password)) {
+      unlockedAssessments.add(assessmentId);
+      close();
+      startQuiz(assessmentId);
+    } else {
+      error.classList.remove("hidden");
+      input.value = "";
+      input.focus();
+    }
+  };
+  document.getElementById("pwSubmit").addEventListener("click", submit);
+  document.getElementById("pwCancel").addEventListener("click", close);
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) close();
+  });
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") submit();
+    if (e.key === "Escape") close();
+  });
+  input.focus();
 }
 
 /* ---------- 3. 문제 풀이 화면 ---------- */
