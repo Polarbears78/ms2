@@ -62,7 +62,18 @@ function renderUnits() {
       <h2>단원을 선택하세요</h2>
       <p class="muted">학습할 단원을 고르면 평가 목록이 나타납니다.</p>
     </div>
-    <div class="unit-grid">${cards}</div>`;
+    <div class="unit-grid">${cards}</div>
+    <div class="tool-section">
+      <h3 class="tool-heading">실험·기록</h3>
+      <a class="tool-card" href="recryst-record.html">
+        <div class="tool-icon">🧪</div>
+        <div class="tool-body">
+          <h3>재결정 실험 기록</h3>
+          <p class="muted">설탕 재결정 실험 기록 시스템 (중2 · 물질의 특성)</p>
+        </div>
+        <span class="start-arrow">열기 →</span>
+      </a>
+    </div>`;
 
   views.units.querySelectorAll(".unit-card.available").forEach((btn) => {
     btn.addEventListener("click", () => renderAssessments(btn.dataset.unit));

@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - claude/upbeat-dijkstra-ej4ddf
+      - main
   workflow_dispatch:
 
 permissions:

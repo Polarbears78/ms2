@@ -112,6 +112,23 @@ body {
 .badge.ok { background: var(--ok-bg); color: var(--ok); }
 .badge.soon { background: #f3f4f6; color: var(--muted); }
 
+/* 실험·기록 카드 */
+.tool-section { margin-top: 26px; }
+.tool-heading { font-size: 14px; color: var(--muted); margin: 0 0 12px; font-weight: 700; }
+.tool-card {
+  display: flex; align-items: center; gap: 16px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 20px;
+  text-decoration: none; color: inherit;
+  transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s;
+}
+.tool-card:hover {
+  transform: translateY(-2px); box-shadow: var(--shadow); border-color: var(--primary);
+}
+.tool-icon { font-size: 30px; }
+.tool-card .tool-body { flex: 1; }
+.tool-card .tool-body h3 { margin: 0 0 4px; font-size: 18px; }
+
 /* 평가 목록 */
 .assessment-list { display: flex; flex-direction: column; gap: 14px; }
 .assessment-card {
