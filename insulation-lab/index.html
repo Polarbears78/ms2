@@ -312,13 +312,15 @@
 <!-- 액션 -->
 <section class="card" style="text-align:center">
   <div class="actions" style="justify-content:center">
+    <button class="act cool" id="btnSubmit">📊 구글 시트로 제출</button>
     <button class="act primary" id="btnPrint">인쇄 / PDF로 저장</button>
     <button class="act" id="btnCopy">보고서 요약 복사</button>
     <button class="act" id="btnClear">우리 조 입력 지우기</button>
   </div>
+  <div id="submitStatus" style="display:none; margin-top:12px; font-size:13px; font-weight:700"></div>
   <p class="foot">
-    입력 내용은 이 기기에 조별로 자동 저장됩니다. 다른 기기에서는 보이지 않습니다.<br>
-    제출은 인쇄본 또는 요약 복사본으로 하며, 최종 확인은 선생님의 안내를 따릅니다.
+    ‘구글 시트로 제출’을 누르면 우리 조 보고서가 선생님 시트에 기록됩니다(권장 제출 방법).<br>
+    입력 내용은 이 기기에도 조별로 임시 저장되며, 인쇄본·요약 복사본으로도 제출할 수 있습니다.
   </p>
 </section>
 </div>
@@ -326,6 +328,14 @@
 <script>
 (function(){
   "use strict";
+  /* ═══════════════════════════════════════════════════════════════
+     [교사 설정] 아래 따옴표 안에 Google Apps Script 웹 앱 배포 URL을 붙여넣으세요.
+     예: var SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfy.../exec";
+     배포 방법은 같은 폴더의 '구글시트_연동_설정가이드.md' 참고.
+     (비워 두면 ‘구글 시트로 제출’ 버튼이 안내 메시지만 표시합니다.)
+  ═══════════════════════════════════════════════════════════════ */
+  var SHEET_ENDPOINT = "";
+
   var TIMES=[0,3,6,9,12,15];
   var TEXT_KEYS=["conduction","convection","radiation","layout","predictDelta","predictReason","bestFactor","predVsResult","redesign"];
   var YMIN=20, YMAX=65;               // 그래프 온도 범위(℃)
@@ -542,6 +552,51 @@
     btn.textContent="복사됨 ✓"; setTimeout(function(){btn.textContent=o;},1300);
   }
 
+  /* ---------- 구글 시트로 제출 ---------- */
+  async function submitToSheet(){
+    var st=document.getElementById("submitStatus");
+    st.style.display="block";
+    if(!SHEET_ENDPOINT){
+      st.style.color="var(--warn)";
+      st.textContent="⚠ 아직 제출 주소가 설정되지 않았습니다. 선생님께 알리고, ‘보고서 요약 복사’로 백업 제출하세요.";
+      return;
+    }
+    var d=collect(), m=metrics();
+    var payload={
+      tool:"insulation-report",
+      submittedAt:new Date().toLocaleString("ko-KR"),
+      jo:cur,
+      designConduction:d.text.conduction||"",
+      designConvection:d.text.convection||"",
+      designRadiation:d.text.radiation||"",
+      layout:d.text.layout||"",
+      predictDelta:d.text.predictDelta||"",
+      predictReason:d.text.predictReason||"",
+      t0:d.meas[0]||"", t3:d.meas[3]||"", t6:d.meas[6]||"",
+      t9:d.meas[9]||"", t12:d.meas[12]||"", t15:d.meas[15]||"",
+      startTemp:(m.start==null?"":fmt(m.start)),
+      endTemp:(m.end==null?"":fmt(m.end)),
+      deltaT:(m.delta==null?"":fmt(m.delta)),
+      bestFactor:d.text.bestFactor||"",
+      predVsResult:d.text.predVsResult||"",
+      redesign:d.text.redesign||""
+    };
+    var btn=document.getElementById("btnSubmit"); var label=btn.textContent;
+    btn.disabled=true; st.style.color="var(--cool)"; st.textContent="전송 중…";
+    try{
+      await fetch(SHEET_ENDPOINT,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+      st.style.color="var(--good)"; st.textContent="✔ 제출 완료 — 선생님 시트에 기록되었습니다.";
+    }catch(e){
+      try{
+        await fetch(SHEET_ENDPOINT,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+        st.style.color="var(--good)"; st.textContent="✔ 제출 요청을 보냈습니다. 시트에 기록되었는지 확인해 주세요.";
+      }catch(e2){
+        st.style.color="var(--warn)"; st.textContent="⚠ 전송 실패 — 인터넷 연결을 확인하고 ‘보고서 요약 복사’로 백업 제출하세요.";
+      }
+    }
+    btn.disabled=false; btn.textContent=label;
+  }
+
   /* ---------- 초기화 ---------- */
   function init(){
     // 조 버튼 생성
@@ -561,6 +616,7 @@
       var el=document.querySelector('[data-t="'+t+'"]');
       if(el) el.addEventListener("input",scheduleSave);
     });
+    document.getElementById("btnSubmit").addEventListener("click",submitToSheet);
     document.getElementById("btnPrint").addEventListener("click",function(){ window.print(); });
     document.getElementById("btnCopy").addEventListener("click",copySummary);
     document.getElementById("btnRegister").addEventListener("click",registerDelta);
