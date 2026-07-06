@@ -1,0 +1,578 @@
+<!-- 단열 컵 보온 설계 탐구 · 학생용 웹 보고서 도구 (중1 과학 Ⅲ.열) -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>보온 컵 설계 탐구 보고서</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#eaeef2; --surface:#ffffff; --surface-2:#f6f8fa;
+    --ink:#17212e; --muted:#5c6775; --faint:#8b95a2;
+    --hot:#e2542a; --hot-soft:#fbe4da;
+    --cool:#217aae; --cool-soft:#dbeaf3;
+    --good:#2b8f66; --good-soft:#dff0e8;
+    --warn:#b9791a;
+    --line:#d6dde4; --line-2:#e6ebf0;
+    --radius:14px;
+    --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sans:"Pretendard Variable",Pretendard,-apple-system,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:var(--sans); color:var(--ink); background:var(--bg);
+    line-height:1.6; -webkit-font-smoothing:antialiased;
+    padding:0 16px 64px;
+  }
+  .wrap{max-width:860px; margin:0 auto}
+
+  /* ── 헤더 ── */
+  header.top{
+    position:sticky; top:0; z-index:20; margin:0 -16px 22px;
+    padding:14px 16px 12px;
+    background:rgba(234,238,242,.86); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .top-row{max-width:860px; margin:0 auto; display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+  .brand{display:flex; align-items:baseline; gap:10px; margin-right:auto}
+  .brand .kicker{font-size:11px; letter-spacing:.14em; color:var(--cool); font-weight:700; text-transform:uppercase}
+  .brand h1{font-size:18px; margin:0; font-weight:800; letter-spacing:-.01em}
+  .jo-pick{display:flex; align-items:center; gap:6px}
+  .jo-pick span{font-size:12px; color:var(--muted); font-weight:600}
+  .jo-pick .btns{display:flex; gap:4px}
+  .jo{
+    font-family:var(--mono); font-size:14px; font-weight:600; width:34px; height:34px;
+    border:1px solid var(--line); background:var(--surface); color:var(--muted);
+    border-radius:9px; cursor:pointer; transition:.12s;
+  }
+  .jo:hover{border-color:var(--cool)}
+  .jo.on{background:var(--ink); color:#fff; border-color:var(--ink)}
+  .saved{font-size:11px; color:var(--faint); font-family:var(--mono); min-width:58px; text-align:right}
+  .saved.show{color:var(--good)}
+
+  /* 고정 조건 배지 */
+  .conds{max-width:860px; margin:10px auto 0; display:flex; gap:8px; flex-wrap:wrap}
+  .cond{
+    font-size:12px; color:var(--ink); background:var(--surface); border:1px solid var(--line);
+    padding:4px 10px; border-radius:999px; display:flex; gap:6px; align-items:center;
+  }
+  .cond b{font-family:var(--mono); font-weight:600; color:var(--cool)}
+  .cond.temp b{color:var(--hot)}
+
+  /* ── 카드/섹션 ── */
+  section.card{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:22px 22px 24px; margin-bottom:18px;
+  }
+  .sec-head{display:flex; align-items:baseline; gap:12px; margin:0 0 4px}
+  .sec-no{
+    font-family:var(--mono); font-size:12px; font-weight:600; color:#fff; background:var(--cool);
+    width:24px; height:24px; border-radius:7px; display:grid; place-items:center; flex:none;
+    transform:translateY(3px);
+  }
+  .sec-head h2{font-size:17px; margin:0; font-weight:800; letter-spacing:-.01em}
+  .sec-sub{color:var(--muted); font-size:13px; margin:2px 0 18px 36px}
+
+  label.f{display:block; font-size:13px; font-weight:700; color:var(--ink); margin:0 0 6px}
+  .hint{font-weight:400; color:var(--faint); font-size:12px}
+  textarea,input.txt{
+    width:100%; font-family:var(--sans); font-size:14px; color:var(--ink);
+    border:1px solid var(--line); border-radius:10px; padding:10px 12px; background:var(--surface-2);
+    resize:vertical; transition:.12s;
+  }
+  textarea:focus,input.txt:focus,input.num:focus{outline:none; border-color:var(--cool); background:#fff; box-shadow:0 0 0 3px var(--cool-soft)}
+  textarea{min-height:58px}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+  .fieldrow{margin-bottom:16px}
+  .fieldrow:last-child{margin-bottom:0}
+
+  /* 열 손실 경로 3열 */
+  .paths{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:4px}
+  .path{border:1px solid var(--line-2); border-radius:11px; padding:12px; background:var(--surface-2)}
+  .path .tag{font-size:12px; font-weight:800; margin-bottom:8px; display:flex; align-items:center; gap:6px}
+  .dot{width:8px; height:8px; border-radius:50%; display:inline-block}
+  .path.cond-p .tag{color:var(--hot)} .path.cond-p .dot{background:var(--hot)}
+  .path.conv-p .tag{color:var(--cool)} .path.conv-p .dot{background:var(--cool)}
+  .path.rad-p .tag{color:var(--warn)} .path.rad-p .dot{background:var(--warn)}
+  .path small{display:block; color:var(--faint); font-size:11px; margin-bottom:8px; min-height:26px}
+  .path textarea{min-height:70px; background:#fff}
+
+  /* ── 측정 ── */
+  .measure-grid{display:grid; grid-template-columns:1.05fr .95fr; gap:20px; align-items:start}
+  table.meas{width:100%; border-collapse:collapse; font-size:13px}
+  table.meas th,table.meas td{border:1px solid var(--line); padding:0; text-align:center}
+  table.meas th{background:var(--surface-2); font-weight:700; color:var(--muted); font-size:12px; padding:7px 4px}
+  table.meas th.h{color:var(--cool)}
+  input.num{
+    width:100%; border:none; background:transparent; text-align:center;
+    font-family:var(--mono); font-size:15px; font-weight:500; color:var(--ink);
+    padding:9px 2px; border-radius:0;
+  }
+  input.num::placeholder{color:#c3cbd4; font-weight:400}
+  td.startcell input.num{color:var(--hot)}
+
+  .readout{display:flex; gap:10px; margin-top:14px}
+  .stat{flex:1; border:1px solid var(--line); border-radius:11px; padding:10px 12px; background:var(--surface-2)}
+  .stat .k{font-size:11px; color:var(--muted); font-weight:600; margin-bottom:2px}
+  .stat .v{font-family:var(--mono); font-size:22px; font-weight:600; line-height:1.1}
+  .stat.delta .v{color:var(--good)}
+  .stat .u{font-size:12px; color:var(--faint); font-weight:400}
+
+  .chartbox{border:1px solid var(--line-2); border-radius:12px; padding:8px 6px 2px; background:var(--surface-2)}
+  .chart-cap{font-size:11px; color:var(--faint); text-align:center; margin:2px 0 6px; font-weight:600}
+  svg.chart{width:100%; height:auto; display:block}
+
+  /* ── 학급 비교 ── */
+  .cmp-note{font-size:12px; color:var(--warn); background:#fdf3e2; border:1px solid #f0dcb8; border-radius:9px; padding:8px 11px; margin:0 0 16px}
+  .bars{display:flex; flex-direction:column; gap:9px}
+  .bar-row{display:grid; grid-template-columns:44px 1fr 62px; align-items:center; gap:10px; font-size:13px}
+  .bar-row .lab{font-weight:700; color:var(--muted); font-family:var(--mono)}
+  .track{height:22px; background:var(--surface-2); border:1px solid var(--line-2); border-radius:7px; overflow:hidden}
+  .fill{height:100%; background:linear-gradient(90deg,var(--cool),var(--hot)); border-radius:6px 0 0 6px; transition:width .4s ease; min-width:2px}
+  .bar-row.best .fill{background:linear-gradient(90deg,var(--good),#5bc494)}
+  .bar-row .val{font-family:var(--mono); font-weight:600; text-align:right; color:var(--ink)}
+  .bar-row.best .lab,.bar-row.best .val{color:var(--good)}
+  .best-tag{font-size:11px; color:var(--good); font-weight:700; margin-left:6px}
+  .empty-cmp{color:var(--faint); font-size:13px; text-align:center; padding:14px}
+
+  /* ── 버튼 ── */
+  .actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:6px}
+  button.act{
+    font-family:var(--sans); font-size:13px; font-weight:700; cursor:pointer;
+    border-radius:10px; padding:10px 16px; border:1px solid var(--line);
+    background:var(--surface); color:var(--ink); transition:.12s;
+  }
+  button.act:hover{border-color:var(--cool); color:var(--cool)}
+  button.act.primary{background:var(--ink); color:#fff; border-color:var(--ink)}
+  button.act.primary:hover{background:#0f1722; color:#fff}
+  button.act.cool{background:var(--cool); color:#fff; border-color:var(--cool)}
+  button.act.cool:hover{background:#1a638d; color:#fff}
+
+  .foot{color:var(--faint); font-size:11.5px; line-height:1.7; margin-top:8px; text-align:center}
+
+  @media (max-width:680px){
+    .measure-grid{grid-template-columns:1fr}
+    .paths{grid-template-columns:1fr}
+    .grid2{grid-template-columns:1fr}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  /* ── 인쇄 ── */
+  @media print{
+    body{background:#fff; padding:0}
+    header.top{position:static; background:#fff; border:none; backdrop-filter:none}
+    .jo-pick,.saved,.actions,.cmp-note,button{display:none!important}
+    section.card{border:1px solid #bbb; break-inside:avoid; box-shadow:none}
+    .conds{margin-top:6px}
+    textarea,input.num,input.txt{background:#fff!important; box-shadow:none!important}
+    .print-title{display:block!important}
+  }
+  .print-title{display:none; text-align:center; font-weight:800; font-size:15px; margin:0 0 4px}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div class="top-row">
+    <div class="brand">
+      <span class="kicker">중1 과학 · Ⅲ. 열</span>
+      <h1>보온 컵 설계 탐구 보고서</h1>
+    </div>
+    <div class="jo-pick">
+      <span>우리 조</span>
+      <div class="btns" id="joBtns"></div>
+    </div>
+    <div class="saved" id="savedTag"></div>
+  </div>
+  <div class="conds">
+    <div class="cond">물의 양 <b>50 mL</b></div>
+    <div class="cond temp">시작 온도 <b>약 60 ℃</b></div>
+    <div class="cond">측정 <b>0→15분</b></div>
+    <div class="cond">간격 <b>3분</b></div>
+    <div class="cond">내컵 <b>공통 종이컵</b></div>
+  </div>
+</header>
+
+<p class="print-title" id="printTitle"></p>
+
+<!-- 1. 설계 -->
+<section class="card">
+  <div class="sec-head"><span class="sec-no">1</span><h2>설계 — 열은 어디로 빠져나갈까?</h2></div>
+  <p class="sec-sub">규칙: 재료 종류는 모든 조가 같습니다. <b>구성과 배치</b>로 승부하세요.</p>
+
+  <div class="fieldrow">
+    <div class="paths">
+      <div class="path cond-p">
+        <div class="tag"><span class="dot"></span>전도 · 컵 벽/바닥</div>
+        <small>손으로 만져서 전해지는 열. 무엇으로 감쌀까?</small>
+        <textarea data-k="conduction" placeholder="예) 에어캡으로 옆면을 두 번 감싼다"></textarea>
+      </div>
+      <div class="path conv-p">
+        <div class="tag"><span class="dot"></span>대류·증발 · 수면 위</div>
+        <small>뜨거운 김이 위로 빠져나감. 어떻게 막을까?</small>
+        <textarea data-k="convection" placeholder="예) 뚜껑을 덮어 김이 나가지 않게 한다"></textarea>
+      </div>
+      <div class="path rad-p">
+        <div class="tag"><span class="dot"></span>복사 · 컵 표면</div>
+        <small>빛(적외선)처럼 뻗어 나가는 열. 무엇으로 반사할까?</small>
+        <textarea data-k="radiation" placeholder="예) 알루미늄 포일로 바깥을 감싸 반사시킨다"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="fieldrow">
+    <label class="f">재료 배치 메모 <span class="hint">— 안쪽부터 바깥쪽 순서로</span></label>
+    <textarea data-k="layout" placeholder="예) 종이컵(물) → 솜 → 에어캡 → 포일 → 판지 뚜껑"></textarea>
+  </div>
+
+  <div class="grid2">
+    <div class="fieldrow" style="margin-bottom:0">
+      <label class="f">예측 — 15분 뒤 몇 ℃ 내려갈까? <span class="hint">(ΔT 예상)</span></label>
+      <input class="txt" data-k="predictDelta" placeholder="예) 약 8 ℃">
+    </div>
+    <div class="fieldrow" style="margin-bottom:0">
+      <label class="f">그렇게 예측한 이유</label>
+      <input class="txt" data-k="predictReason" placeholder="예) 세 방향을 모두 막았기 때문에">
+    </div>
+  </div>
+</section>
+
+<!-- 2. 측정 -->
+<section class="card">
+  <div class="sec-head"><span class="sec-no">2</span><h2>측정 — 온도 변화 기록</h2></div>
+  <p class="sec-sub">‘시작’ 신호에 맞춰 <b>동시에</b> 재기 시작합니다. 빈 칸은 그래프에서 자동으로 건너뜁니다.</p>
+
+  <div class="measure-grid">
+    <div>
+      <table class="meas">
+        <tr>
+          <th>시간(분)</th>
+          <th class="h">0<br><span style="font-weight:400;color:var(--faint)">(시작)</span></th>
+          <th>3</th><th>6</th><th>9</th><th>12</th>
+          <th class="h">15</th>
+        </tr>
+        <tr>
+          <th>온도(℃)</th>
+          <td class="startcell"><input class="num" data-t="0" inputmode="decimal" placeholder="60"></td>
+          <td><input class="num" data-t="3" inputmode="decimal" placeholder="–"></td>
+          <td><input class="num" data-t="6" inputmode="decimal" placeholder="–"></td>
+          <td><input class="num" data-t="9" inputmode="decimal" placeholder="–"></td>
+          <td><input class="num" data-t="12" inputmode="decimal" placeholder="–"></td>
+          <td><input class="num" data-t="15" inputmode="decimal" placeholder="–"></td>
+        </tr>
+      </table>
+
+      <div class="readout">
+        <div class="stat"><div class="k">시작 온도</div><div class="v" id="stStart">–<span class="u"> ℃</span></div></div>
+        <div class="stat"><div class="k">마지막 온도</div><div class="v" id="stEnd">–<span class="u"> ℃</span></div></div>
+        <div class="stat delta"><div class="k">온도 하강폭 ΔT</div><div class="v" id="stDelta">–<span class="u"> ℃</span></div></div>
+      </div>
+    </div>
+
+    <div class="chartbox">
+      <div class="chart-cap">냉각 곡선 — 시간에 따른 온도</div>
+      <svg class="chart" id="chart" viewBox="0 0 360 240" role="img" aria-label="냉각 곡선 그래프"></svg>
+    </div>
+  </div>
+</section>
+
+<!-- 3. 정리 -->
+<section class="card">
+  <div class="sec-head"><span class="sec-no">3</span><h2>정리 — 결과 해석</h2></div>
+  <p class="sec-sub">데이터를 근거로 서술하세요. ‘잘했다/못했다’보다 <b>왜 그런지</b>가 중요합니다.</p>
+
+  <div class="fieldrow">
+    <label class="f">보온이 잘 된 조는 전도·대류·복사 중 <b>무엇</b>을 특히 잘 막았을까?</label>
+    <textarea data-k="bestFactor" placeholder="예) 뚜껑으로 수면의 증발을 막은 것이 가장 효과가 컸다"></textarea>
+  </div>
+  <div class="fieldrow">
+    <label class="f">예측과 결과를 비교 — 같았나? 달랐다면 이유는?</label>
+    <textarea data-k="predVsResult" placeholder="예) 예측보다 더 많이 식었다. 뚜껑 틈으로 김이 빠져나갔기 때문으로 보인다"></textarea>
+  </div>
+  <div class="fieldrow">
+    <label class="f">다시 만든다면 <b>한 가지</b>를 바꾼다면?</label>
+    <textarea data-k="redesign" placeholder="예) 뚜껑을 포일로 완전히 밀폐하겠다"></textarea>
+  </div>
+</section>
+
+<!-- 4. 학급 비교 -->
+<section class="card">
+  <div class="sec-head"><span class="sec-no">4</span><h2>학급 비교판 <span style="font-size:12px;color:var(--faint);font-weight:600">(선택)</span></h2></div>
+  <p class="sec-sub"><b>ΔT가 작을수록</b> 보온을 잘 한 것입니다. 조별 결과를 모아 비교해 봅시다.</p>
+  <p class="cmp-note">⚠ ‘등록’을 누르면 우리 조 ΔT가 이 도구를 함께 쓰는 <b>모든 조에게 공유</b>됩니다.</p>
+
+  <div class="bars" id="cmpBars"><div class="empty-cmp">아직 등록된 조가 없습니다. 측정을 마친 조부터 등록해 보세요.</div></div>
+
+  <div class="actions" style="margin-top:16px">
+    <button class="act cool" id="btnRegister">우리 조 ΔT 등록 / 갱신</button>
+    <button class="act" id="btnRefresh">다시 불러오기</button>
+  </div>
+</section>
+
+<!-- 액션 -->
+<section class="card" style="text-align:center">
+  <div class="actions" style="justify-content:center">
+    <button class="act primary" id="btnPrint">인쇄 / PDF로 저장</button>
+    <button class="act" id="btnCopy">보고서 요약 복사</button>
+    <button class="act" id="btnClear">우리 조 입력 지우기</button>
+  </div>
+  <p class="foot">
+    입력 내용은 이 기기에 조별로 자동 저장됩니다. 다른 기기에서는 보이지 않습니다.<br>
+    제출은 인쇄본 또는 요약 복사본으로 하며, 최종 확인은 선생님의 안내를 따릅니다.
+  </p>
+</section>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var TIMES=[0,3,6,9,12,15];
+  var TEXT_KEYS=["conduction","convection","radiation","layout","predictDelta","predictReason","bestFactor","predVsResult","redesign"];
+  var YMIN=20, YMAX=65;               // 그래프 온도 범위(℃)
+  var cur=1;                          // 현재 조
+  var saveTimer=null;
+
+  /* ---------- 저장소 헬퍼 (window.storage, 실패해도 세션 내 동작) ---------- */
+  var mem={};                         // storage 불가 시 인메모리 대체
+  function pkey(jo){return "report:jo"+jo;}
+  function dkey(jo){return "delta:jo"+jo;}
+  async function sGet(key,shared){
+    try{ if(!window.storage) throw 0; var r=await window.storage.get(key,!!shared); return r?r.value:null; }
+    catch(e){ return (mem[(shared?"S:":"")+key]!==undefined)?mem[(shared?"S:":"")+key]:null; }
+  }
+  async function sSet(key,val,shared){
+    try{ if(!window.storage) throw 0; await window.storage.set(key,val,!!shared); return true; }
+    catch(e){ mem[(shared?"S:":"")+key]=val; return false; }
+  }
+
+  /* ---------- 현재 화면 → 데이터 객체 ---------- */
+  function collect(){
+    var d={jo:cur,text:{},meas:{}};
+    TEXT_KEYS.forEach(function(k){
+      var el=document.querySelector('[data-k="'+k+'"]'); d.text[k]=el?el.value:"";
+    });
+    TIMES.forEach(function(t){
+      var el=document.querySelector('[data-t="'+t+'"]'); d.meas[t]=el?el.value:"";
+    });
+    return d;
+  }
+  function apply(d){
+    d=d||{text:{},meas:{}};
+    TEXT_KEYS.forEach(function(k){
+      var el=document.querySelector('[data-k="'+k+'"]'); if(el) el.value=(d.text&&d.text[k])||"";
+    });
+    TIMES.forEach(function(t){
+      var el=document.querySelector('[data-t="'+t+'"]'); if(el) el.value=(d.meas&&d.meas[t]!=null)?d.meas[t]:"";
+    });
+  }
+
+  /* ---------- ΔT 계산 ---------- */
+  function points(){
+    var pts=[];
+    TIMES.forEach(function(t){
+      var el=document.querySelector('[data-t="'+t+'"]');
+      var v=el?parseFloat(el.value):NaN;
+      if(!isNaN(v)) pts.push({x:t,y:v});
+    });
+    return pts;
+  }
+  function metrics(){
+    var pts=points();
+    var start=null,end=null;
+    var t0=document.querySelector('[data-t="0"]');
+    var v0=t0?parseFloat(t0.value):NaN;
+    start=!isNaN(v0)?v0:(pts.length?pts[0].y:null);
+    if(start===null) start=60; // 고정 조건 기본값
+    if(pts.length){ end=pts[pts.length-1].y; }
+    var delta=(pts.length>=1&&start!==null)?(start-end):null;
+    return {start:start,end:end,delta:delta,pts:pts};
+  }
+
+  /* ---------- 리드아웃 + 그래프 ---------- */
+  function fmt(n){ if(n===null||isNaN(n)) return "–"; return (Math.round(n*10)/10).toString(); }
+  function render(){
+    var m=metrics();
+    document.getElementById("stStart").innerHTML=fmt(m.start)+'<span class="u"> ℃</span>';
+    document.getElementById("stEnd").innerHTML=(m.end===null?"–":fmt(m.end))+'<span class="u"> ℃</span>';
+    document.getElementById("stDelta").innerHTML=(m.delta===null?"–":fmt(m.delta))+'<span class="u"> ℃</span>';
+    drawChart(m.pts);
+  }
+
+  function drawChart(pts){
+    var W=360,H=240, L=34,R=12,T=12,B=30;
+    var pw=W-L-R, ph=H-T-B;
+    function X(t){ return L + (t/15)*pw; }
+    function Y(v){ var c=Math.max(YMIN,Math.min(YMAX,v)); return T + (1-(c-YMIN)/(YMAX-YMIN))*ph; }
+    var s='';
+    // 배경 온도 그라데이션
+    s+='<defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">'
+      +'<stop offset="0" stop-color="var(--hot-soft)"/><stop offset="1" stop-color="var(--cool-soft)"/>'
+      +'</linearGradient></defs>';
+    s+='<rect x="'+L+'" y="'+T+'" width="'+pw+'" height="'+ph+'" fill="url(#tg)" opacity=".55" rx="4"/>';
+    // 가로 눈금(온도)
+    [20,30,40,50,60].forEach(function(v){
+      var y=Y(v);
+      s+='<line x1="'+L+'" y1="'+y+'" x2="'+(W-R)+'" y2="'+y+'" stroke="var(--line-2)" stroke-width="1"/>';
+      s+='<text x="'+(L-6)+'" y="'+(y+3.5)+'" text-anchor="end" font-size="9" fill="var(--faint)" font-family="var(--mono)">'+v+'</text>';
+    });
+    // 세로 눈금(시간)
+    TIMES.forEach(function(t){
+      var x=X(t);
+      s+='<line x1="'+x+'" y1="'+T+'" x2="'+x+'" y2="'+(H-B)+'" stroke="var(--line-2)" stroke-width="1"/>';
+      s+='<text x="'+x+'" y="'+(H-B+14)+'" text-anchor="middle" font-size="9" fill="var(--faint)" font-family="var(--mono)">'+t+'</text>';
+    });
+    s+='<text x="'+(L+pw/2)+'" y="'+(H-2)+'" text-anchor="middle" font-size="9" fill="var(--faint)">시간(분)</text>';
+    // 선 + 점
+    if(pts.length>=2){
+      var dpath=pts.map(function(p,i){return (i?'L':'M')+X(p.x)+' '+Y(p.y);}).join(' ');
+      s+='<path d="'+dpath+'" fill="none" stroke="var(--cool)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>';
+    }
+    pts.forEach(function(p,i){
+      var col=(i===0)?'var(--hot)':'var(--cool)';
+      s+='<circle cx="'+X(p.x)+'" cy="'+Y(p.y)+'" r="4" fill="#fff" stroke="'+col+'" stroke-width="2.4"/>';
+    });
+    if(pts.length===0){
+      s+='<text x="'+(L+pw/2)+'" y="'+(T+ph/2)+'" text-anchor="middle" font-size="11" fill="var(--faint)">온도를 입력하면 곡선이 그려집니다</text>';
+    }
+    document.getElementById("chart").innerHTML=s;
+  }
+
+  /* ---------- 자동 저장 ---------- */
+  function flashSaved(){
+    var tag=document.getElementById("savedTag");
+    tag.textContent="저장됨 ✓"; tag.classList.add("show");
+    clearTimeout(flashSaved._t);
+    flashSaved._t=setTimeout(function(){ tag.classList.remove("show"); tag.textContent=""; },1400);
+  }
+  async function saveNow(){
+    await sSet(pkey(cur), JSON.stringify(collect()), false);
+    flashSaved();
+  }
+  function scheduleSave(){
+    render();
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(saveNow,700);
+  }
+
+  /* ---------- 조 전환 ---------- */
+  async function loadJo(jo){
+    cur=jo;
+    // 버튼 상태
+    Array.prototype.forEach.call(document.querySelectorAll(".jo"),function(b){
+      b.classList.toggle("on", parseInt(b.dataset.jo,10)===jo);
+    });
+    document.getElementById("printTitle").textContent=jo+"조 · 보온 컵 설계 탐구 보고서";
+    var raw=await sGet(pkey(jo),false);
+    var d=null; try{ d=raw?JSON.parse(raw):null; }catch(e){ d=null; }
+    apply(d);
+    render();
+  }
+
+  /* ---------- 학급 비교판 ---------- */
+  async function loadCompare(){
+    var rows=[]; var maxDelta=0;
+    for(var j=1;j<=5;j++){
+      var raw=await sGet(dkey(j),true);
+      var val=null; try{ val=raw?JSON.parse(raw):null; }catch(e){ val=null; }
+      if(val&&typeof val.delta==="number"&&!isNaN(val.delta)){
+        rows.push({jo:j,delta:val.delta});
+        if(val.delta>maxDelta) maxDelta=val.delta;
+      }
+    }
+    var box=document.getElementById("cmpBars");
+    if(!rows.length){ box.innerHTML='<div class="empty-cmp">아직 등록된 조가 없습니다. 측정을 마친 조부터 등록해 보세요.</div>'; return; }
+    var best=Math.min.apply(null,rows.map(function(r){return r.delta;}));
+    // 표시는 조 번호 순
+    rows.sort(function(a,b){return a.jo-b.jo;});
+    var html="";
+    rows.forEach(function(r){
+      var w=maxDelta>0?Math.max(4,(r.delta/maxDelta)*100):4;
+      var isBest=(r.delta===best);
+      html+='<div class="bar-row'+(isBest?' best':'')+'">'
+          +'<div class="lab">'+r.jo+'조</div>'
+          +'<div class="track"><div class="fill" style="width:'+w+'%"></div></div>'
+          +'<div class="val">'+fmt(r.delta)+' ℃'+(isBest?'<span class="best-tag">최우수</span>':'')+'</div>'
+          +'</div>';
+    });
+    box.innerHTML=html;
+  }
+  async function registerDelta(){
+    var m=metrics();
+    if(m.delta===null||isNaN(m.delta)){ alert("먼저 측정 온도를 입력해 ΔT가 계산되어야 등록할 수 있습니다."); return; }
+    await sSet(dkey(cur), JSON.stringify({delta:Math.round(m.delta*10)/10, at:Date.now()}), true);
+    await loadCompare();
+    var btn=document.getElementById("btnRegister");
+    var o=btn.textContent; btn.textContent="등록 완료 ✓";
+    setTimeout(function(){ btn.textContent=o; },1300);
+  }
+
+  /* ---------- 요약 복사 ---------- */
+  function buildSummary(){
+    var d=collect(), m=metrics();
+    var L=[];
+    L.push("["+cur+"조] 보온 컵 설계 탐구 보고서");
+    L.push("조건: 물 50 mL · 시작 약 60 ℃ · 0→15분(3분 간격)");
+    L.push("");
+    L.push("[설계] 열 손실 차단");
+    L.push(" · 전도: "+(d.text.conduction||"-"));
+    L.push(" · 대류·증발: "+(d.text.convection||"-"));
+    L.push(" · 복사: "+(d.text.radiation||"-"));
+    L.push(" · 재료 배치: "+(d.text.layout||"-"));
+    L.push(" · 예측 ΔT: "+(d.text.predictDelta||"-")+" / 이유: "+(d.text.predictReason||"-"));
+    L.push("");
+    L.push("[측정] 온도(℃)");
+    L.push(" "+TIMES.map(function(t){var el=document.querySelector('[data-t="'+t+'"]');return t+"분="+((el&&el.value)?el.value:"-");}).join("  "));
+    L.push(" 시작 "+fmt(m.start)+" ℃ → 마지막 "+(m.end===null?"-":fmt(m.end))+" ℃  |  ΔT = "+(m.delta===null?"-":fmt(m.delta))+" ℃");
+    L.push("");
+    L.push("[정리]");
+    L.push(" · 잘 막은 요인: "+(d.text.bestFactor||"-"));
+    L.push(" · 예측 vs 결과: "+(d.text.predVsResult||"-"));
+    L.push(" · 재설계 1가지: "+(d.text.redesign||"-"));
+    return L.join("\n");
+  }
+  async function copySummary(){
+    var txt=buildSummary();
+    try{ await navigator.clipboard.writeText(txt); }
+    catch(e){
+      var ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta);
+      ta.select(); try{document.execCommand("copy");}catch(_){}
+      document.body.removeChild(ta);
+    }
+    var btn=document.getElementById("btnCopy"); var o=btn.textContent;
+    btn.textContent="복사됨 ✓"; setTimeout(function(){btn.textContent=o;},1300);
+  }
+
+  /* ---------- 초기화 ---------- */
+  function init(){
+    // 조 버튼 생성
+    var wrap=document.getElementById("joBtns");
+    for(var j=1;j<=5;j++){
+      var b=document.createElement("button");
+      b.className="jo"; b.textContent=j; b.dataset.jo=j;
+      b.addEventListener("click",(function(n){return function(){ loadJo(n); };})(j));
+      wrap.appendChild(b);
+    }
+    // 입력 바인딩
+    TEXT_KEYS.forEach(function(k){
+      var el=document.querySelector('[data-k="'+k+'"]');
+      if(el) el.addEventListener("input",scheduleSave);
+    });
+    TIMES.forEach(function(t){
+      var el=document.querySelector('[data-t="'+t+'"]');
+      if(el) el.addEventListener("input",scheduleSave);
+    });
+    document.getElementById("btnPrint").addEventListener("click",function(){ window.print(); });
+    document.getElementById("btnCopy").addEventListener("click",copySummary);
+    document.getElementById("btnRegister").addEventListener("click",registerDelta);
+    document.getElementById("btnRefresh").addEventListener("click",loadCompare);
+    document.getElementById("btnClear").addEventListener("click",async function(){
+      if(!confirm(cur+"조의 입력 내용을 모두 지울까요? (되돌릴 수 없습니다)")) return;
+      apply({text:{},meas:{}}); await saveNow(); render();
+    });
+    loadJo(1);
+    loadCompare();
+  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init);
+  else init();
+})();
+</script>
