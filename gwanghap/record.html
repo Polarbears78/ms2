@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>광합성 실험 기록 · 광합성</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>.chk{display:block;margin:6px 0;font-weight:500}</style>
+</head>
+<body>
+<header><div class="wrap">
+  <h1>탐구 · 광합성 실험 기록</h1>
+  <p>Ⅴ. 식물과 에너지 · 2차시 탐구 · 교과서 180~181쪽 · <a href="index.html" style="color:#cfe3ff">목록으로</a></p>
+</div></header>
+<div class="wrap">
+  <div class="card">
+    <h2>모둠·학생 정보</h2>
+    <div class="row">
+      <div><label for="sid">학번 (예: 20203)</label><input type="text" id="sid" inputmode="numeric"></div>
+      <div><label for="sname">이름</label><input type="text" id="sname"></div>
+    </div>
+    <label for="group" style="margin-top:8px">모둠</label>
+    <input type="text" id="group" placeholder="예: 3모둠">
+  </div>
+
+  <div class="card">
+    <h2>① 탐구 설계</h2>
+    <label for="question">탐구 질문</label>
+    <input type="text" id="question" placeholder="예: 광합성에 필요한 물질과 산물은 무엇일까?">
+    <label for="hypo" style="margin-top:8px">가설</label>
+    <input type="text" id="hypo" placeholder="예: 광합성이 일어나면 이산화 탄소는 줄고 산소는 늘어날 것이다.">
+    <label for="const" style="margin-top:8px">통제 변인 (일정하게 유지한 조건)</label>
+    <input type="text" id="const" placeholder="예: 온도, 빛의 세기, 시금치의 양">
+  </div>
+
+  <div class="card">
+    <h2>② 측정 결과</h2>
+    <p class="note">밀폐 용기에 식물(시금치·검정말 등)을 넣고 빛을 비추며 기체 농도 변화를 기록하세요. 값이 없으면 관찰한 내용만 적어도 됩니다.</p>
+    <table style="width:100%;border-collapse:collapse;font-size:.9rem" id="tbl">
+      <tr style="background:#eaf1fb"><th style="border:1px solid #d8dee9;padding:6px">측정 시각</th><th style="border:1px solid #d8dee9;padding:6px">산소(O₂) 농도</th><th style="border:1px solid #d8dee9;padding:6px">이산화 탄소(CO₂) 농도</th></tr>
+    </table>
+    <div style="height:8px"></div>
+    <button type="button" id="addRow" style="width:auto;padding:8px 14px;background:#eaf1fb;color:var(--main)">＋ 측정 행 추가</button>
+  </div>
+
+  <div class="card">
+    <h2>③ 결과 해석</h2>
+    <label for="analysis">시간이 지남에 따라 산소와 이산화 탄소 농도는 각각 어떻게 변했나요? 그 까닭은?</label>
+    <textarea id="analysis" placeholder="예: 빛을 비추자 산소 농도는 점점 늘고 이산화 탄소 농도는 줄었다. 광합성으로 이산화 탄소가 소모되고 산소가 만들어졌기 때문이다."></textarea>
+    <label for="conclusion" style="margin-top:8px">결론 — 광합성에 필요한 물질과 산물</label>
+    <div class="row">
+      <div><label class="note">필요한 물질(원료)</label><input type="text" id="need" placeholder="예: 이산화 탄소"></div>
+      <div><label class="note">만들어진 물질(산물)</label><input type="text" id="prod" placeholder="예: 산소"></div>
+    </div>
+    <label for="apply" style="margin-top:8px">[창의·융합] 식물을 이용한 실내 공기 개선 방법 아이디어</label>
+    <textarea id="apply"></textarea>
+  </div>
+
+  <div class="card">
+    <h2>안전 확인</h2>
+    <label class="chk"><input type="checkbox" id="safe1"> 밀폐 용기에서 공기가 새지 않도록 주의하며 실험했습니다.</label>
+    <label class="chk"><input type="checkbox" id="safe2"> 실험복·실험용 장갑을 착용하고 안전 수칙을 지켰습니다.</label>
+  </div>
+
+  <button id="submitBtn">실험 기록 제출하기</button>
+  <div id="resultBox" class="result"></div>
+  <p class="note" style="margin-bottom:40px">탐구 기록은 여러 번 제출할 수 있습니다. (마지막 제출이 최종본)</p>
+</div>
+<script src="assets/config.js"></script>
+<script>
+const tbl = document.getElementById("tbl");
+function addRow() {
+  const tr = document.createElement("tr");
+  tr.innerHTML = '<td style="border:1px solid #d8dee9;padding:2px"><input type="text" style="border:none" placeholder="0분"></td>'
+    + '<td style="border:1px solid #d8dee9;padding:2px"><input type="text" style="border:none" placeholder="%"></td>'
+    + '<td style="border:1px solid #d8dee9;padding:2px"><input type="text" style="border:none" placeholder="%"></td>';
+  tbl.appendChild(tr);
+}
+addRow(); addRow(); addRow();
+document.getElementById("addRow").addEventListener("click", addRow);
+
+document.getElementById("submitBtn").addEventListener("click", async () => {
+  const g = id => document.getElementById(id);
+  const resBox = g("resultBox");
+  const err = m => { resBox.className = "result err"; resBox.textContent = m; };
+  const sid = g("sid").value.trim(), name = g("sname").value.trim();
+  if (!/^\d{4,5}$/.test(sid)) return err("학번을 정확히 입력하세요.");
+  if (name.length < 2) return err("이름을 입력하세요.");
+  if (!g("safe1").checked || !g("safe2").checked) return err("안전 확인 항목 두 가지에 모두 체크해야 제출할 수 있습니다.");
+  const rows = [];
+  tbl.querySelectorAll("tr").forEach((tr, i) => {
+    if (i === 0) return;
+    const c = tr.querySelectorAll("input");
+    if (c[0].value.trim() || c[1].value.trim() || c[2].value.trim())
+      rows.push({ 시각: c[0].value.trim(), O2: c[1].value.trim(), CO2: c[2].value.trim() });
+  });
+  const btn = g("submitBtn"); btn.disabled = true; btn.textContent = "제출 중...";
+  try {
+    const r = await fetch(SCRIPT_URL, { method: "POST", headers: {"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify({ action: "record", sid, name, group: g("group").value.trim(),
+        question: g("question").value.trim(), hypo: g("hypo").value.trim(), control: g("const").value.trim(),
+        rows, analysis: g("analysis").value.trim(), need: g("need").value.trim(), prod: g("prod").value.trim(),
+        apply: g("apply").value.trim() }) });
+    const d = await r.json();
+    if (d.ok) { resBox.className = "result ok"; resBox.innerHTML = "<b>제출 완료!</b> 실험 기록이 저장되었습니다. 수정하려면 고친 뒤 다시 제출하세요."; }
+    else err(d.message || "제출 실패. 다시 시도하세요.");
+  } catch (e) { err("서버에 연결할 수 없습니다. 와이파이를 확인하세요."); }
+  btn.disabled = false; btn.textContent = "실험 기록 제출하기";
+});
+</script>
+</body>
+</html>
