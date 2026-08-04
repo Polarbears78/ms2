@@ -40,15 +40,25 @@ body {
   max-width: 860px;
   margin: 0 auto;
   padding: 16px 20px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 .logo {
   margin: 0;
   font-size: 22px;
   cursor: pointer;
-  display: inline-block;
 }
 .breadcrumb {
-  margin-top: 6px;
+  width: 100%;
+  margin-top: 4px;
   font-size: 13px;
   color: #e0e7ff;
 }
@@ -319,4 +329,34 @@ body {
   .result-hero { flex-direction: column; text-align: center; }
   .q-stem { font-size: 16px; }
   .answer-input { flex-direction: column; }
+}
+
+
+/* 활동지 생성기 링크 */
+.header-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+.logo { margin-right: auto; }
+.breadcrumb { width: 100%; }
+.worksheet-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  border: 1.5px solid rgba(255,255,255,0.35);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.worksheet-link:hover {
+  background: rgba(255,255,255,0.3);
+  border-color: rgba(255,255,255,0.6);
 }
