@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>과학 활동지 생성기</title>
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --card: #ffffff;
+      --ink: #1f2937;
+      --muted: #6b7280;
+      --primary: #4f46e5;
+      --border: #e5e7eb;
+      --shadow: 0 4px 14px rgba(31,41,55,0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: "Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+      background: var(--bg); color: var(--ink); line-height: 1.7;
+    }
+    .hidden { display: none !important; }
+    .muted { color: var(--muted); }
+
+    .app-header {
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+      color: #fff; box-shadow: var(--shadow);
+      position: sticky; top: 0; z-index: 10; padding: 16px 20px 12px;
+    }
+    .header-inner { max-width: 900px; margin: 0 auto; }
+    .logo { margin: 0; font-size: 22px; cursor: pointer; display: inline-block; }
+    .breadcrumb { margin-top: 6px; font-size: 13px; color: #e0e7ff; }
+    .breadcrumb a { color: #fff; text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb .sep { margin: 0 6px; opacity: 0.6; }
+    .breadcrumb .current { font-weight: 600; }
+
+    .app-main { max-width: 900px; margin: 0 auto; padding: 24px 20px 60px; }
+
+    .page-head { margin-bottom: 20px; }
+    .page-head h2 { margin: 0 0 4px; font-size: 24px; }
+
+    /* Controls */
+    .control-bar {
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+      margin-bottom: 20px; padding: 16px;
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    }
+    .control-bar label { font-weight: 600; font-size: 14px; }
+    .control-bar select {
+      padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px;
+      font: inherit; font-size: 14px; background: #fff;
+    }
+    .btn {
+      padding: 8px 18px; border: none; border-radius: 8px; cursor: pointer;
+      font: inherit; font-size: 14px; font-weight: 600;
+      transition: background 0.15s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: #4338ca; }
+    .btn-outline { background: #fff; color: var(--primary); border: 1px solid var(--primary); }
+    .btn-outline:hover { background: #eef2ff; }
+    .toggle-group { display: flex; gap: 4px; margin-left: auto; }
+    .toggle-btn {
+      padding: 6px 14px; border: 1px solid var(--border); background: #fff;
+      cursor: pointer; font: inherit; font-size: 13px;
+    }
+    .toggle-btn:first-child { border-radius: 6px 0 0 6px; }
+    .toggle-btn:last-child { border-radius: 0 6px 6px 0; }
+    .toggle-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    /* Worksheet */
+    .worksheet-header {
+      text-align: center; padding: 30px 20px 20px;
+      border-bottom: 2px solid #333; margin-bottom: 24px;
+    }
+    .worksheet-header h2 { font-size: 26px; margin: 0; }
+    .worksheet-header .sub { font-size: 16px; color: var(--muted); margin-top: 8px; }
+    .worksheet-info {
+      display: flex; justify-content: space-between; font-size: 14px;
+      margin-bottom: 24px; padding: 10px 0; border-bottom: 1px dashed var(--border);
+    }
+
+    .question-block {
+      margin-bottom: 32px; padding: 16px 20px;
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+      page-break-inside: avoid;
+    }
+    .q-header { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px; flex-wrap: wrap; }
+    .q-num {
+      background: var(--primary); color: #fff; min-width: 32px; height: 32px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 15px; flex-shrink: 0;
+    }
+    .q-type {
+      font-size: 11px; padding: 2px 8px; border-radius: 999px;
+      font-weight: 600; flex-shrink: 0;
+    }
+    .type-mc { background: #dbeafe; color: #2563eb; }
+    .type-multi { background: #fef3c7; color: #d97706; }
+    .type-short { background: #d1fae5; color: #059669; }
+    .type-essay { background: #fce7f3; color: #db2777; }
+    .q-stem { font-size: 16px; white-space: pre-line; margin-bottom: 12px; line-height: 1.8; }
+
+    .q-image { text-align: center; margin: 12px 0; }
+    .q-image img { max-width: 100%; max-height: 300px; border-radius: 8px; border: 1px solid var(--border); }
+    .q-figure-note { font-size: 12px; color: var(--muted); text-align: center; margin-top: 4px; }
+
+    .options { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    @media (max-width: 500px) { .options { grid-template-columns: 1fr; } }
+    .opt {
+      display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 15px;
+    }
+    .opt-circle {
+      width: 22px; height: 22px; border: 2px solid #999; border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .answer-space {
+      margin-top: 10px; padding: 14px 16px;
+      border: 2px dashed #ccc; border-radius: 8px; min-height: 80px;
+      background: #fafafa;
+    }
+    .answer-lines { margin-top: 10px; }
+    .answer-lines .line {
+      border-bottom: 1px solid #ddd; height: 28px; margin-bottom: 4px;
+    }
+
+    .answer-reveal {
+      margin-top: 8px; padding: 10px 14px;
+      background: #dcfce7; border-left: 4px solid #16a34a; border-radius: 0 6px 6px 0;
+      font-size: 14px;
+    }
+    .answer-reveal strong { color: #16a34a; }
+    .explanation {
+      margin-top: 6px; padding: 8px 12px;
+      background: #eef2ff; border-radius: 6px; font-size: 13px; color: #4f46e5;
+    }
+
+    /* Print */
+    @media print {
+      .app-header, .control-bar, .app-footer, .breadcrumb { display: none !important; }
+      body { background: #fff; }
+      .app-main { max-width: 100%; padding: 0; }
+      .question-block { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; }
+      .btn { display: none; }
+    }
+
+    .app-footer {
+      text-align: center; padding: 20px; color: var(--muted); font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <h1 class="logo" id="homeLink">📝 과학 활동지 생성기</h1>
+      <nav class="breadcrumb" id="breadcrumb"></nav>
+    </div>
+  </header>
+
+  <main class="app-main" id="app">
+    <!-- 선택 화면 -->
+    <section id="view-select">
+      <div class="page-head">
+        <h2>활동지 만들기</h2>
+        <p class="muted">단원과 평가를 선택하면 인쇄용 활동지가 생성됩니다.</p>
+      </div>
+      <div class="control-bar" id="controls"></div>
+    </section>
+
+    <!-- 활동지 출력 -->
+    <section id="view-worksheet" class="hidden"></section>
+  </main>
+
+  <footer class="app-footer">
+    <p>중학교 과학 · 활동지 생성기 | <a href="index.html">평가 앱으로 돌아가기</a></p>
+  </footer>
+
+  <script src="data.js"></script>
+  <script>
+    /* ─── 상태 ─── */
+    let currentMode = 'student'; // 'student' | 'teacher'
+
+    /* ─── 선택 화면 ─── */
+    function renderSelect() {
+      document.getElementById('view-select').classList.remove('hidden');
+      document.getElementById('view-worksheet').classList.add('hidden');
+      document.getElementById('breadcrumb').innerHTML = '<span class="current">활동지 선택</span>';
+
+      const availableUnits = UNITS.filter(u => u.available);
+      const unitOpts = availableUnits.map(u => 
+        `<option value="${u.id}">${u.roman}. ${u.title}</option>`
+      ).join('');
+
+      const firstUnit = availableUnits[0];
+      const firstAssessments = (firstUnit.assessments || []).map(aid => ASSESSMENTS[aid]);
+      const assessOpts = firstAssessments.map(a =>
+        `<option value="${a.id}">${a.title}</option>`
+      ).join('');
+
+      document.getElementById('controls').innerHTML = `
+        <label>단원</label>
+        <select id="selUnit">${unitOpts}</select>
+        <label>평가</label>
+        <select id="selAssess">${assessOpts}</select>
+        <button class="btn btn-primary" id="btnGenerate">✨ 활동지 생성</button>
+        <span style="margin-left:auto;font-size:13px;color:var(--muted)">
+          ※ 생성 후 인쇄(Ctrl+P) 하세요
+        </span>
+      `;
+
+      document.getElementById('selUnit').addEventListener('change', function() {
+        const unit = UNITS.find(u => u.id === this.value);
+        const assessments = (unit.assessments || []).map(aid => ASSESSMENTS[aid]);
+        document.getElementById('selAssess').innerHTML = assessments.map(a =>
+          `<option value="${a.id}">${a.title}</option>`
+        ).join('');
+      });
+
+      document.getElementById('btnGenerate').addEventListener('click', () => {
+        const assessId = document.getElementById('selAssess').value;
+        renderWorksheet(assessId);
+      });
+    }
+
+    /* ─── 활동지 렌더링 ─── */
+    function renderWorksheet(assessId) {
+      const assessment = ASSESSMENTS[assessId];
+      const unit = UNITS.find(u => u.id === assessment.unitId);
+      const questions = QUESTIONS[assessment.questions] || [];
+      const total = questions.length;
+
+      document.getElementById('view-select').classList.add('hidden');
+      const wsView = document.getElementById('view-worksheet');
+      wsView.classList.remove('hidden');
+
+      document.getElementById('breadcrumb').innerHTML = `
+        <a href="#" id="crumbBack">활동지 선택</a>
+        <span class="sep">›</span>
+        <span class="current">${assessment.title}</span>
+      `;
+      document.getElementById('crumbBack').addEventListener('click', (e) => {
+        e.preventDefault();
+        renderSelect();
+      });
+
+      const typeLabels = { mc:'객관식', multi:'복수정답', short:'단답형', essay:'서술형' };
+      const typeCounts = {};
+      questions.forEach(q => {
+        typeCounts[q.type] = (typeCounts[q.type] || 0) + 1;
+      });
+      const typeSummary = Object.entries(typeCounts)
+        .map(([t, c]) => `${typeLabels[t] || t} ${c}문항`)
+        .join(' · ');
+
+      const questionsHtml = questions.map(q => renderQuestion(q)).join('');
+
+      wsView.innerHTML = `
+        <div class="worksheet-header">
+          <h2>${assessment.title}</h2>
+          <div class="sub">${typeSummary} (총 ${total}문항)</div>
+        </div>
+        <div class="worksheet-info">
+          <span>${unit.roman}. ${unit.title}</span>
+          <span>이름: ____________________</span>
+        </div>
+        <div class="control-bar" style="justify-content:center;gap:12px;" id="modeBar">
+          <span style="font-weight:600;">보기 모드:</span>
+          <div class="toggle-group">
+            <button class="toggle-btn active" id="modeStudent">👤 학생용</button>
+            <button class="toggle-btn" id="modeTeacher">👩‍🏫 교사용</button>
+          </div>
+          <button class="btn btn-outline" onclick="window.print()">🖨️ 인쇄하기</button>
+        </div>
+        <div id="questionsContainer">${questionsHtml}</div>
+        <div style="text-align:center;margin-top:24px;">
+          <button class="btn btn-outline" onclick="window.print()">🖨️ 인쇄하기</button>
+          <button class="btn btn-outline" id="btnBackToSelect" style="margin-left:8px;">↩ 다시 선택</button>
+        </div>
+      `;
+
+      document.getElementById('modeStudent').addEventListener('click', () => switchMode('student', assessId));
+      document.getElementById('modeTeacher').addEventListener('click', () => switchMode('teacher', assessId));
+      document.getElementById('btnBackToSelect').addEventListener('click', renderSelect);
+    }
+
+    function switchMode(mode, assessId) {
+      currentMode = mode;
+      const questions = QUESTIONS[ASSESSMENTS[assessId].questions] || [];
+      document.getElementById('questionsContainer').innerHTML = questions.map(q => renderQuestion(q)).join('');
+      document.getElementById('modeStudent').classList.toggle('active', mode === 'student');
+      document.getElementById('modeTeacher').classList.toggle('active', mode === 'teacher');
+    }
+
+    /* ─── 개별 문항 렌더링 ─── */
+    function renderQuestion(q) {
+      const typeLabel = { mc:'객관식', multi:'복수정답', short:'단답형', essay:'서술형' }[q.type] || q.type;
+      const typeClass = { mc:'type-mc', multi:'type-multi', short:'type-short', essay:'type-essay' }[q.type] || '';
+
+      let bodyHtml = '';
+
+      // 그림
+      if (q.image) {
+        bodyHtml += `<div class="q-image"><img src="${q.image}" alt="그림"></div>`;
+      }
+      if (q.figureNote) {
+        bodyHtml += `<div class="q-figure-note">${q.figureNote}</div>`;
+      }
+
+      // 보기 (객관식/복수정답)
+      if ((q.type === 'mc' || q.type === 'multi') && q.options) {
+        const cols = q.options.length > 5 ? 1 : 2;
+        bodyHtml += `<div class="options" style="grid-template-columns:repeat(${cols},1fr)">`;
+        q.options.forEach(opt => {
+          bodyHtml += `<div class="opt"><span class="opt-circle"></span><span>${opt.label} ${opt.text}</span></div>`;
+        });
+        bodyHtml += `</div>`;
+        if (q.type === 'multi') {
+          bodyHtml += `<div style="font-size:13px;color:var(--muted);margin-top:4px;">※ 정답 개수만큼 고르세요.</div>`;
+        }
+      }
+
+      // 답안 공간 (단답형/서술형)
+      if (q.type === 'short') {
+        bodyHtml += `<div class="answer-space" style="min-height:40px;display:flex;align-items:center;">
+          <span style="color:#aaa;">답: </span>
+        </div>`;
+      }
+      if (q.type === 'essay') {
+        const lines = 4;
+        bodyHtml += `<div class="answer-lines">${'<div class="line"></div>'.repeat(lines)}</div>`;
+      }
+
+      // 정답 공개 (교사용)
+      if (currentMode === 'teacher') {
+        if (q.answer) {
+          bodyHtml += `<div class="answer-reveal"><strong>✔ 정답:</strong> ${q.answer}</div>`;
+        }
+        if (q.modelAnswer) {
+          bodyHtml += `<div class="answer-reveal"><strong>✔ 모범 답안:</strong> ${q.modelAnswer}</div>`;
+        }
+        if (q.explanation) {
+          bodyHtml += `<div class="explanation"><strong>💡 해설:</strong> ${q.explanation}</div>`;
+        }
+      }
+
+      return `
+        <div class="question-block">
+          <div class="q-header">
+            <span class="q-num">${q.id}</span>
+            <span class="q-type ${typeClass}">${typeLabel}</span>
+            ${q.topic ? `<span style="font-size:12px;color:var(--muted);">${q.topic}</span>` : ''}
+          </div>
+          <div class="q-stem">${q.stem}</div>
+          ${bodyHtml}
+        </div>`;
+    }
+
+    /* ─── 시작 ─── */
+    document.getElementById('homeLink').addEventListener('click', renderSelect);
+    renderSelect();
+  </script>
+</body>
+</html>
