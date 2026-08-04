@@ -7,6 +7,31 @@
  * 3. 시트로 돌아가면 메뉴바에 "📝 활동지 생성" 추가됨
  */
 
+
+// ============================================================
+//  🌐 WEB APP (doGet / doPost)
+// ============================================================
+
+function doGet() {
+  return HtmlService.createHtmlOutput(HTML_FORM)
+    .setTitle('MS2 과학 활동지 생성기')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+function doPost(e) {
+  const unit = e.parameter.unit;
+  const type = e.parameter.type;
+  const count = parseInt(e.parameter.count || '5');
+  const isTeacher = e.parameter.teacher === 'true';
+  
+  const html = buildWorksheetHTML(unit, type, count, isTeacher);
+  return HtmlService.createHtmlOutput(html)
+    .setTitle('📝 활동지')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
 // 메뉴 생성
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
@@ -17,9 +42,9 @@ function onOpen() {
 
 // 대화상자 표시
 function showDialog() {
-  const html = HtmlService.createHtmlOutputFromFile('WorksheetDialog')
+  const html = HtmlService.createHtmlOutput(HTML_FORM)
     .setWidth(450)
-    .setHeight(400)
+    .setHeight(420)
     .setTitle('MS2 과학 활동지 생성기');
   SpreadsheetApp.getUi().showModalDialog(html, 'MS2 활동지 생성');
 }
@@ -156,3 +181,57 @@ function generateWorksheet(unit, type, count, isTeacher) {
 
   SpreadsheetApp.getUi().alert('✅ 활동지가 생성되었습니다!\n단원: ' + unitData.title + '\n평가: ' + typeLabel + '\n문항: ' + selected.length + '개');
 }
+
+
+// ============================================================
+//  🖥️ WEB APP HTML 출력 (buildWorksheetHTML)
+// ============================================================
+
+function buildWorksheetHTML(unit, type, count, isTeacher) {
+  const result = getWorksheetData(unit, type, count);
+  if (!result) return '<h2>⚠️ 데이터를 찾을 수 없습니다.</h2>';
+  const { unitData, selected } = result;
+  const typeLabel = type === 'total' ? '총괄 평가' : '서술형 평가';
+  const modeLabel = isTeacher ? '🧑‍🏫 교사용 (정답 포함)' : '👤 학생용';
+
+  let itemsHTML = '';
+  selected.forEach((item, i) => {
+    itemsHTML += '<div class="q-box"><div class="q-num">' + (i + 1) + '</div>';
+    itemsHTML += '<div class="q-text">' + escapeHTML(item.q) + '</div>';
+    if (type === 'total') {
+      if (isTeacher) {
+        itemsHTML += '<div class="answer">✅ 정답: ' + escapeHTML(item.a) + '</div>';
+      } else {
+        itemsHTML += '<div class="answer-blank">답: ____________________</div>';
+      }
+    } else {
+      if (isTeacher) {
+        itemsHTML += '<div class="answer essay">✅ 모범답안:<br>' + escapeHTML(item.a) + '</div>';
+      } else {
+        itemsHTML += '<div class="essay-box">　</div>';
+      }
+    }
+    itemsHTML += '</div>';
+  });
+
+  return '<!DOCTYPE html>\n<html lang="ko">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>📝 ' + escapeHTML(unitData.title) + ' - ' + typeLabel + '</title>\n<style>\n  * { margin:0; padding:0; box-sizing:border-box; }\n  body { font-family: \'Nanum Gothic\', sans-serif; max-width:800px; margin:0 auto; padding:20px; background:#f5f5f5; }\n  .paper { background:#fff; padding:40px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1); }\n  h1 { font-size:22px; text-align:center; margin-bottom:4px; color:#2c3e50; }\n  .sub { text-align:center; font-size:13px; color:#888; margin-bottom:16px; }\n  .info { display:flex; justify-content:space-between; font-size:13px; margin-bottom:20px; padding:8px 0; border-bottom:2px solid #3498db; }\n  .q-box { margin-bottom:14px; padding:12px; background:#fafafa; border-left:4px solid #3498db; border-radius:0 6px 6px 0; }\n  .q-num { font-size:14px; font-weight:bold; color:#3498db; margin-bottom:4px; }\n  .q-text { font-size:14px; line-height:1.7; color:#333; }\n  .answer { font-size:13px; color:#e67e22; margin-top:8px; padding:6px 10px; background:#fff8f0; border-radius:4px; }\n  .answer-blank { font-size:13px; color:#bbb; margin-top:8px; }\n  .essay-box { min-height:80px; border:2px dashed #ccc; border-radius:4px; margin-top:8px; }\n  .answer.essay { font-size:13px; color:#e67e22; margin-top:8px; padding:10px; background:#fff8f0; border-radius:4px; line-height:1.8; }\n  .btn-row { text-align:center; margin-top:24px; }\n  .btn-row button, .btn-row a { display:inline-block; padding:10px 24px; margin:4px; border:none; border-radius:6px; font-size:14px; cursor:pointer; text-decoration:none; }\n  .btn-print { background:#3498db; color:#fff; }\n  .btn-back { background:#ddd; color:#333; }\n  @media print {\n    body { background:#fff; }\n    .paper { box-shadow:none; padding:20px; }\n    .btn-row { display:none; }\n  }\n</style>\n</head>\n<body>\n<div class="paper">\n  <h1>' + escapeHTML(unitData.title) + ' — ' + typeLabel + '</h1>\n  <p class="sub">' + modeLabel + ' ｜ 문항 수: ' + selected.length + '개</p>\n  <div class="info">\n    <span>이름: __________________</span>\n    <span>날짜: ____년 ____월 ____일</span>\n  </div>\n  ' + itemsHTML + '\n</div>\n<div class="btn-row">\n  <button class="btn-print" onclick="window.print()">🖨️ 인쇄하기</button>\n  <a class="btn-back" href="' + ScriptApp.getService().getUrl() + '">↩ 다시 선택</a>\n</div>\n</body>\n</html>';
+}
+
+function escapeHTML(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function getWorksheetData(unit, type, count) {
+  const unitData = DB[unit];
+  if (!unitData) return null;
+  const qList = unitData[type];
+  if (!qList) return null;
+  const selected = qList.slice(0, Math.min(count, qList.length));
+  return { unitData, selected };
+}
+
+// ============================================================
+//  🎨 HTML 폼 (공통: Web App + Sheets Dialog)
+// ============================================================
+
+const HTML_FORM = '<!DOCTYPE html>\n<html>\n<head>\n<style>\n  * { margin:0; padding:0; box-sizing:border-box; }\n  body { font-family: \'Nanum Gothic\', sans-serif; padding:20px; background:#f5f7fa; }\n  h2 { font-size:18px; text-align:center; color:#2c3e50; margin-bottom:16px; }\n  label { display:block; font-size:13px; font-weight:bold; color:#555; margin-top:12px; margin-bottom:4px; }\n  select, input[type=range] { width:100%; padding:8px; font-size:14px; border:1px solid #ccc; border-radius:6px; }\n  .range-wrap { display:flex; align-items:center; gap:8px; }\n  .range-wrap output { font-weight:bold; color:#3498db; min-width:30px; }\n  .mode-wrap { display:flex; gap:12px; margin-top:6px; }\n  .mode-wrap label { display:flex; align-items:center; gap:4px; font-weight:normal; margin:0; cursor:pointer; }\n  .btn { display:block; width:100%; padding:12px; margin-top:20px; background:#3498db; color:#fff; border:none; border-radius:8px; font-size:16px; font-weight:bold; cursor:pointer; }\n  .btn:hover { background:#2980b9; }\n  .desc { font-size:11px; color:#999; text-align:center; margin-top:8px; }\n</style>\n</head>\n<body>\n  <h2>📝 MS2 과학 활동지 생성기</h2>\n  <form id="form" method="post">\n    <label>📚 단원 선택</label>\n    <select name="unit">\n      <option value="2">II. 물질의 구성</option>\n      <option value="3">III. 우리 주변의 화합물</option>\n      <option value="4">IV. 물질 변화와 화학 반응식</option>\n    </select>\n\n    <label>📝 평가 종류</label>\n    <select name="type">\n      <option value="total">총괄 평가 (빈칸 채우기)</option>\n      <option value="essay">서술형 평가</option>\n    </select>\n\n    <label>🔢 문항 수: <output id="cntOut">5</output>개</label>\n    <div class="range-wrap">\n      <input type="range" name="count" min="1" max="15" value="5" oninput="cntOut.textContent=this.value">\n    </div>\n\n    <label>🎯 모드</label>\n    <div class="mode-wrap">\n      <label><input type="radio" name="teacher" value="false" checked> 👤 학생용</label>\n      <label><input type="radio" name="teacher" value="true"> 🧑‍🏫 교사용</label>\n    </div>\n\n    <button class="btn" type="submit">📝 활동지 생성하기</button>\n  </form>\n  <p class="desc">Ctrl+P 또는 인쇄 버튼으로 바로 출력 가능</p>\n\n  <script>\n    document.getElementById(\'form\').addEventListener(\'submit\', function(e) {\n      e.preventDefault();\n      const formData = new FormData(this);\n      const unit = formData.get(\'unit\');\n      const type = formData.get(\'type\');\n      const count = parseInt(formData.get(\'count\') || \'5\');\n      const isTeacher = formData.get(\'teacher\') === \'true\';\n      if (window.google && google.script && google.script.run) {\n        google.script.run\n          .withSuccessHandler(function() { google.script.host.close(); })\n          .withFailureHandler(function(err) { alert(\'오류: \' + err); })\n          .generateWorksheet(unit, type, count, isTeacher);\n      } else {\n        this.submit();\n      }\n    });\n  </script>\n</body>\n</html>';
