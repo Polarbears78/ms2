@@ -76,7 +76,10 @@
     '<button class="run" id="sm-send" style="margin-top:12px">제출하기</button>' +
     '<div class="msg" id="sm-msg"></div>';
 
-  document.querySelector('.wrap').appendChild(card);
+    // 헤더에도 .wrap이 있으므로 본문 영역(마지막 .wrap)에 붙입니다.
+  var wraps = document.querySelectorAll('.wrap');
+  var host = wraps[wraps.length - 1] || document.body;
+  host.appendChild(card);
 
   /* ── 실험 설계 요약 (실시간) ──────────────────────── */
 
