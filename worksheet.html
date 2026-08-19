@@ -73,7 +73,8 @@
   .rubric { width: 100%; border-collapse: collapse; font-size: 0.8em; margin-top: 10px; }
   .rubric th, .rubric td { border: 1px solid #c8d0d6; padding: 6px 7px; vertical-align: top; text-align: left; }
   .rubric th { background: #eef3f7; color: #2c3e50; }
-  .rubric td.el { background: #fafbfc; font-weight: bold; width: 18%; }
+  .rubric td.el { background: #fafbfc; font-weight: bold; width: 16%; }
+  .rubric th.std, .rubric td.std { width: 11%; text-align: center; font-size: 0.92em; color: #2c3e50; white-space: nowrap; }
   .rubric td.mark { width: 8%; text-align: center; }
 
   .grade-box { border: 2px solid #2c3e50; border-radius: 8px; padding: 14px; margin-top: 18px; }
@@ -245,7 +246,10 @@ const DB = {
       pages: '교과서 188~191쪽',
       goal: '호흡과 광합성 과정에서 출입하는 에너지와 물질의 변화를 분석할 수 있다.',
       materials: '교과서, 개념 정리 활동지, 해 보기 활동지',
-      standardNote: '성취기준 코드는 학교에서 채택한 교육과정 문서(총론·각론)를 기준으로 교사가 확인하여 기입하십시오. 본 활동지는 위 학습 목표를 평가 준거로 삼습니다.'
+      standards: [
+        { code:'[9과12-02]', text:'식물의 호흡과 광합성의 관계를 이해하고, 호흡과 광합성 과정에서 출입하는 에너지와 물질의 변화를 분석할 수 있다.' },
+        { code:'[9과12-03]', text:'광합성산물의 저장과 이용 과정을 이해하고, 모형으로 설명할 수 있다.' }
+      ]
     },
     concept: [
       {q:'식물의 호흡은 살아 있는 (  ) 세포에서 일어나며, 빛의 유무와 관계없이 (  ) 일어난다.', a:'모든 / 항상',
@@ -313,23 +317,23 @@ const DB = {
        m:'개념의 방향(정성)만 맞히고 양(정량) 비교를 하지 않으면 “위험하다”는 결론에 이른다. 근거의 양적 타당성을 평가 요소로 삼는 문항.'}
     ],
     rubric: [
-      { el:'물질 변화 분석',
+      { el:'물질 변화 분석', std:'9과12-02',
         hi:'광합성과 호흡의 반응물·생성물을 모두 정확히 구분하여 관계식으로 나타낸다.',
         mid:'반응물과 생성물을 대체로 구분하나 일부 물질을 혼동하거나 관계식이 불완전하다.',
         lo:'반응물과 생성물을 구분하지 못하거나 두 과정을 뒤바꾸어 서술한다.' },
-      { el:'에너지 출입 분석',
+      { el:'에너지 출입 분석', std:'9과12-02',
         hi:'광합성은 빛에너지의 흡수·저장, 호흡은 에너지의 방출·사용임을 방향까지 정확히 설명한다.',
         mid:'두 과정의 에너지 출입을 언급하나 방향이나 용어 사용이 부정확하다.',
         lo:'에너지 출입을 설명하지 못한다.' },
-      { el:'빛 조건에 따른 기체 출입 해석',
+      { el:'빛 조건에 따른 기체 출입 해석', std:'9과12-02',
         hi:'빛의 세기에 따라 광합성량과 호흡량을 비교하여 겉보기 기체 출입을 세 가지 경우로 구분해 해석한다.',
         mid:'낮과 밤의 두 경우는 설명하나, 두 양이 같아지는 경우를 설명하지 못한다.',
         lo:'겉보기 결과와 실제 과정을 구분하지 못한다(예: 낮에는 광합성만 한다고 진술).' },
-      { el:'광합성 산물의 전환·이동·사용',
-        hi:'포도당 → 녹말 → 설탕의 전환과 체관을 통한 이동, 사용·저장 형태를 근거를 들어 연결하여 설명한다.',
-        mid:'전환 또는 이동 중 일부만 설명하거나 이동 통로를 혼동한다.',
-        lo:'산물의 전환·이동 과정을 설명하지 못한다.' },
-      { el:'탐구 수행 (변인 통제·안전)',
+      { el:'광합성산물의 저장·이용 (모형 설명)', std:'9과12-03',
+        hi:'포도당 → 녹말 → 설탕의 전환과 체관을 통한 이동, 사용·저장 형태를 근거를 들어 연결하여 설명하고, 이를 모형(정보 그림)으로 표현한다.',
+        mid:'전환 또는 이동 중 일부만 설명하거나 이동 통로를 혼동하며, 모형 표현이 불완전하다.',
+        lo:'산물의 저장·이용 과정을 설명하지 못한다.' },
+      { el:'탐구 수행 (변인 통제·안전)', std:'공통',
         hi:'조작·종속·통제 변인을 구분하여 설정하고, 안전 수칙을 지키며 관찰 결과를 근거로 결론을 도출한다.',
         mid:'변인을 일부만 구분하거나, 결과 해석에서 근거 제시가 부족하다.',
         lo:'변인을 구분하지 못하고 결과와 무관한 결론을 제시한다.' }
@@ -463,7 +467,10 @@ function generateWorksheet() {
   if (meta) {
     html += '<div class="ws-meta"><b>차시</b> ' + esc(meta.lesson) + ' · <b>' + esc(meta.pages) + '</b><br>' +
       '<b>학습 목표</b> ' + esc(meta.goal) + '<br><b>준비물</b> ' + esc(meta.materials);
-    if (isTeacher && meta.standardNote) html += '<br><b>성취기준</b> ' + esc(meta.standardNote);
+    if (isTeacher && meta.standards) {
+      html += '<br><b>성취기준</b>' + meta.standards.map(st =>
+        '<br>&nbsp;&nbsp;<b>' + esc(st.code) + '</b> ' + esc(st.text)).join('');
+    }
     html += '</div>';
   }
 
@@ -491,9 +498,9 @@ function generateWorksheet() {
   if (isTeacher && unitData.rubric) {
     html += '<div class="grade-box"><h3>📊 교사용 채점표 (과정 중심 평가)</h3>';
     html += '<p class="sub">학습 목표 준거: ' + esc(meta ? meta.goal : '') + '</p>';
-    html += '<table class="rubric"><tr><th>평가 요소</th><th>상</th><th>중</th><th>하</th><th class="mark">판정</th></tr>';
+    html += '<table class="rubric"><tr><th>평가 요소</th><th class="std">성취기준</th><th>상</th><th>중</th><th>하</th><th class="mark">판정</th></tr>';
     unitData.rubric.forEach(r => {
-      html += '<tr><td class="el">' + esc(r.el) + '</td><td>' + esc(r.hi) + '</td><td>' + esc(r.mid) +
+      html += '<tr><td class="el">' + esc(r.el) + '</td><td class="std">' + esc(r.std || '') + '</td><td>' + esc(r.hi) + '</td><td>' + esc(r.mid) +
         '</td><td>' + esc(r.lo) + '</td><td class="mark">상 · 중 · 하</td></tr>';
     });
     html += '</table>';
@@ -506,7 +513,7 @@ function generateWorksheet() {
     }
     html += '<div class="caution"><b>활용 시 유의</b><br>' +
       '· 본 채점표는 수업 설계 보조 자료이며, 성취 수준의 최종 판정과 학교생활기록부 기재 여부는 교사의 전문적 검토로 결정합니다.<br>' +
-      '· 성취기준 코드 · 배점 · 반영 비율은 학교 학업성적관리규정과 평가 계획에 맞추어 조정하십시오.<br>' +
+      '· 성취기준은 2022 개정 교육과정 [9과12-02] · [9과12-03]에 근거하며, 배점 · 반영 비율은 학교 학업성적관리규정과 평가 계획에 맞추어 조정하십시오.<br>' +
       '· 학교생활기록부 기재 시에는 관찰된 사실과 학생이 실제로 산출한 결과에 근거하여 서술합니다.</div>';
     html += '</div>';
   }
