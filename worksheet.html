@@ -53,10 +53,41 @@
   .toggle::after { content: ''; position: absolute; width: 20px; height: 20px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: 0.3s; }
   .toggle.on::after { left: 22px; }
 
+  /* ── 응답 기록 · 채점표 ── */
+  .rec-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+  .rec-bar input { padding: 8px 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 0.9em; width: 110px; }
+  .save-chip { font-size: 0.78em; font-weight: bold; color: #27ae60; background: #eaf7f0; border-radius: 99px; padding: 5px 12px; }
+  .save-chip.dirty { color: #7f8c8d; background: #eee; }
+
+  .ws-meta { background: #f8f9fa; border: 1px solid #e3e8ec; border-radius: 8px; padding: 10px 12px; font-size: 0.85em; color: #555; line-height: 1.75; margin-bottom: 16px; }
+  .ws-meta b { color: #2c3e50; }
+  .ws-stu { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.88em; color: #444; margin-top: 6px; }
+
+  .ans-area { width: 100%; border: 1px solid #cfd8dd; border-radius: 6px; padding: 8px 10px; font-family: inherit; font-size: 0.95em; line-height: 1.6; margin-top: 6px; resize: vertical; background: #fffdf8; }
+  .ans-line { width: 100%; border: none; border-bottom: 1.5px dashed #bbb; padding: 6px 2px; font-family: inherit; font-size: 0.95em; background: transparent; }
+  .ans-area:focus, .ans-line:focus { outline: 2px solid #3498db; outline-offset: 1px; }
+
+  .misconc { background: #fdecea; border-left: 3px solid #e74c3c; border-radius: 0 6px 6px 0; padding: 8px 10px; margin-top: 8px; font-size: 0.84em; display: none; }
+  .misconc.show { display: block; }
+
+  .rubric { width: 100%; border-collapse: collapse; font-size: 0.8em; margin-top: 10px; }
+  .rubric th, .rubric td { border: 1px solid #c8d0d6; padding: 6px 7px; vertical-align: top; text-align: left; }
+  .rubric th { background: #eef3f7; color: #2c3e50; }
+  .rubric td.el { background: #fafbfc; font-weight: bold; width: 18%; }
+  .rubric td.mark { width: 8%; text-align: center; }
+
+  .grade-box { border: 2px solid #2c3e50; border-radius: 8px; padding: 14px; margin-top: 18px; }
+  .grade-box h3 { font-size: 1em; color: #2c3e50; margin-bottom: 6px; }
+  .grade-box p.sub { font-size: 0.82em; color: #777; margin-bottom: 6px; }
+  .obs-note { display: block; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; min-height: 76px; padding: 8px; font-size: 0.85em; line-height: 1.6; font-family: inherit; background: #fff; resize: vertical; }
+  .caution { background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 10px 12px; font-size: 0.8em; line-height: 1.7; margin-top: 12px; }
+
   @media print {
     .header, .container > .card, .actions { display: none !important; }
     #worksheet { box-shadow: none; padding: 10px; }
     body { background: white; }
+    .ans-area, .ans-line, .obs-note { border-color: #999; background: transparent; }
+    .question, .grade-box, .rubric tr { break-inside: avoid; page-break-inside: avoid; }
   }
 </style>
 </head>
@@ -70,38 +101,55 @@
 <div class="container">
   <div class="card">
     <h2>📚 단원 선택</h2>
-    <div class="btn-group" id="unitBtns">
-      <button class="btn active" data-unit="2">II. 물질의 구성</button>
-      <button class="btn" data-unit="3">III. 우리 주변의 화합물</button>
-      <button class="btn" data-unit="4">IV. 물질 변화와 화학 반응식</button>
-    </div>
+    <div class="btn-group" id="unitBtns"></div>
   </div>
 
   <div class="card">
-    <h2>📋 평가 종류</h2>
-    <div class="btn-group" id="typeBtns">
-      <button class="btn active" data-type="total">총괄 평가</button>
-      <button class="btn" data-type="essay">서술형 평가</button>
-    </div>
+    <h2>📋 활동지 · 평가 종류</h2>
+    <div class="btn-group" id="typeBtns"></div>
     <div class="option-row">
       <label>문항 수:</label>
       <select id="qCount">
         <option value="5">5문항</option>
         <option value="10" selected>10문항</option>
         <option value="15">15문항</option>
-        <option value="20">20문항</option>
+        <option value="99">전체</option>
       </select>
     </div>
     <div class="toggle-switch">
-      <span>교사용 (정답 표시):</span>
+      <span>교사용 (정답 · 채점표 표시):</span>
       <div class="toggle" id="teacherToggle" onclick="toggleTeacher()"></div>
       <span id="teacherLabel">학생용</span>
+    </div>
+    <div class="toggle-switch">
+      <span>응답 기록 모드 (이 기기에 자동 저장):</span>
+      <div class="toggle" id="recordToggle" onclick="toggleRecord()"></div>
+      <span id="recordLabel">꺼짐</span>
+    </div>
+    <div class="rec-bar" id="recBar" style="display:none">
+      <input id="stuClass" placeholder="학급 (예: 2-3)">
+      <input id="stuNo" placeholder="번호">
+      <input id="stuName" placeholder="이름">
+      <span class="save-chip dirty" id="saveChip">저장 대기</span>
     </div>
   </div>
 
   <div class="actions show">
     <button class="btn-generate" onclick="generateWorksheet()">📝 활동지 생성</button>
-    <button class="btn-print" onclick="window.print()">🖨️ 인쇄</button>
+    <button class="btn-print" onclick="window.print()">🖨️ 인쇄 / PDF</button>
+  </div>
+
+  <div class="card" id="recTools" style="display:none">
+    <h2>🗂️ 평가기록</h2>
+    <div class="btn-group">
+      <button class="btn" onclick="copySummary()">📋 응답 요약 복사</button>
+      <button class="btn" onclick="downloadCSV()">⬇️ 기록 CSV 내려받기</button>
+      <button class="btn" onclick="clearRecord()">🗑️ 이 활동지 기록 지우기</button>
+    </div>
+    <p style="font-size:0.8em; color:#777; margin-top:10px; line-height:1.6;">
+      ※ 응답은 외부로 전송되지 않고 이 브라우저(기기)에만 저장됩니다. 기기·브라우저를 바꾸거나 방문 기록을 지우면 기록이 남지 않습니다.<br>
+      ※ 제출·보관이 필요한 경우 <b>CSV 내려받기</b> 또는 <b>인쇄/PDF</b>로 산출물을 확보하십시오.
+    </p>
   </div>
 
   <div id="worksheet"></div>
@@ -189,67 +237,350 @@ const DB = {
       {q:'발열 반응과 흡열 반응의 차이를 에너지 출입 관점에서 설명하고 각각 예를 드시오.', a:'발열 반응: 반응물 > 생성물 에너지, 열 방출 (예: 연소, 중화). 흡열 반응: 반응물 < 생성물 에너지, 열 흡수 (예: 광합성, 탄산칼슘 열분해).'},
       {q:'촉매의 역할과 특징을 쓰고, 실생활에서 촉매가 이용되는 예를 드시오.', a:'촉매: 반응 전후 자신은 변하지 않고 활성화 에너지를 낮춰 반응 속도를 높이는 물질. 예: 자동차 배기가스 정화 장치의 백금 촉매.'},
     ]
+  },
+  '5': {
+    title: 'Ⅴ. 식물과 에너지 — 2. 식물의 호흡과 광합성산물',
+    meta: {
+      lesson: '2. 식물의 호흡과 광합성산물 · 01 식물의 호흡과 광합성의 관계 (1/3차시)',
+      pages: '교과서 188~191쪽',
+      goal: '호흡과 광합성 과정에서 출입하는 에너지와 물질의 변화를 분석할 수 있다.',
+      materials: '교과서, 개념 정리 활동지, 해 보기 활동지',
+      standardNote: '성취기준 코드는 학교에서 채택한 교육과정 문서(총론·각론)를 기준으로 교사가 확인하여 기입하십시오. 본 활동지는 위 학습 목표를 평가 준거로 삼습니다.'
+    },
+    concept: [
+      {q:'식물의 호흡은 살아 있는 (  ) 세포에서 일어나며, 빛의 유무와 관계없이 (  ) 일어난다.', a:'모든 / 항상',
+       m:'“식물은 밤에만 호흡한다”는 대표적 오개념. 호흡은 뿌리·줄기·잎의 모든 살아 있는 세포에서 밤낮 없이 일어난다.'},
+      {q:'호흡을 관계식으로 나타내면  포도당 + (  ) → 이산화 탄소 + 물 + (  )  이다.', a:'산소 / 에너지'},
+      {q:'광합성을 관계식으로 나타내면  (  ) + 물 —(빛에너지)→ 포도당 + (  )  이다.', a:'이산화 탄소 / 산소'},
+      {q:'광합성은 빛에너지를 (  ) 형태의 에너지로 저장하는 과정이고, 호흡은 저장된 에너지를 (  )하여 생명 활동에 사용하는 과정이다.', a:'화학(양분) / 방출',
+       m:'에너지 “출입 방향”을 반대로 쓰는 오류가 잦다. 광합성=흡수·저장, 호흡=방출·사용.'},
+      {q:'빛이 강한 낮에는 광합성량이 호흡량보다 (  ), 겉보기에는 이산화 탄소를 (  )하고 산소를 (  )한다.', a:'많아서 / 흡수 / 방출'},
+      {q:'빛이 없는 밤에는 (  )만 일어나므로 산소를 (  )하고 이산화 탄소를 (  )한다.', a:'호흡 / 흡수 / 방출'},
+      {q:'아침·저녁처럼 빛이 약할 때 광합성량과 호흡량이 같아지면, 겉보기 기체의 출입은 (  ) 것처럼 관찰된다.', a:'없는',
+       m:'“기체 출입이 없다 = 아무 일도 일어나지 않는다”로 오해하기 쉬움. 두 과정이 동시에 같은 양으로 일어나는 상태임을 강조.'},
+      {q:'광합성으로 처음 만들어지는 양분은 (  )이며, 잎에서는 물에 잘 녹지 않는 (  )으로 바뀌어 임시로 저장된다.', a:'포도당 / 녹말'},
+      {q:'밤이 되면 녹말은 물에 잘 녹는 (  ) 등으로 바뀌어 (  )을 통해 각 기관으로 이동한다.', a:'설탕 / 체관',
+       m:'이동 통로를 물관으로 답하는 오류가 많다. 물·무기 양분=물관, 광합성 산물=체관.'},
+      {q:'이동한 양분은 (  )의 재료로 쓰여 에너지를 내거나, 몸을 구성하는 물질이 되어 (  )에 사용된다.', a:'호흡 / 생장'},
+      {q:'남은 양분은 기관에 저장되는데, 감자·고구마는 (  ), 포도는 (  ), 양파는 (  ) 형태로 저장한다.', a:'녹말 / 포도당 / 설탕'},
+      {q:'콩은 (  ), 깨는 (  ) 형태로 양분을 저장한다.', a:'단백질 / 지방'}
+    ],
+    inquiry: [
+      {q:'[탐구 설계] BTB 용액에 날숨을 불어넣어 (  )색으로 만든 뒤, ㉠ 검정말 + 빛, ㉡ 검정말 + 알루미늄 포일(어둠), ㉢ 검정말 없이 빛 의 세 시험관을 준비하였다. 괄호에 알맞은 색을 쓰고, ㉢을 두는 까닭을 쓰시오.',
+       a:'노란색. ㉢은 대조군으로, 검정말의 유무만 다르게 하여 색 변화가 검정말(광합성·호흡) 때문임을 확인하기 위해 둔다.'},
+      {q:'[예상] ㉠과 ㉡의 BTB 용액 색 변화를 각각 예상하고, 그 까닭을 광합성량과 호흡량을 비교하여 쓰시오.',
+       a:'㉠ 노란색 → 파란색: 광합성량 > 호흡량이므로 용액 속 이산화 탄소가 줄어든다. ㉡ 노란색 유지(더 진해짐): 호흡만 일어나 이산화 탄소가 늘어난다.'},
+      {q:'[변인] 이 탐구의 조작 변인과 종속 변인을 각각 쓰시오.',
+       a:'조작 변인: 빛의 유무. 종속 변인: BTB 용액의 색 변화(용액 속 이산화 탄소 농도).'},
+      {q:'[변인 통제] 같게 해야 할 조건(통제 변인)을 3가지 이상 쓰시오.',
+       a:'검정말의 양과 상태, BTB 용액의 양과 처음 농도, 온도, 시험관의 크기, 관찰 시간, 빛의 세기(㉠·㉢) 등.'},
+      {q:'[오차 요인] 세 시험관의 온도가 서로 달라졌다면 결과 해석에 어떤 문제가 생기는지 쓰시오.',
+       a:'온도는 광합성량과 호흡량에 모두 영향을 주므로, 색 변화가 빛 때문인지 온도 때문인지 구분할 수 없어 인과 해석이 어려워진다.'},
+      {q:'[자료 해석] 밀폐된 온실에서 하루 동안 이산화 탄소 농도를 측정하니 해 뜨기 직전에 가장 높고, 오후 늦게 가장 낮았다. 그 까닭을 쓰시오.',
+       a:'밤새 호흡만 일어나 이산화 탄소가 계속 쌓여 새벽에 최고가 되고, 낮 동안 광합성량이 호흡량보다 커서 이산화 탄소가 계속 줄어 오후에 최저가 된다.'},
+      {q:'[사고 확장] 광합성량과 호흡량이 같아지는 시각이 하루에 두 번 나타나는 까닭을 빛의 세기 변화와 관련지어 쓰시오.',
+       a:'빛의 세기가 아침에는 커지고 저녁에는 작아지므로, 광합성량이 호흡량과 같아지는 지점을 아침과 저녁에 한 번씩 지나기 때문이다.'},
+      {q:'[안전] 이 탐구를 수행할 때 지켜야 할 안전 수칙을 2가지 이상 쓰시오.',
+       a:'BTB 용액이 눈·피부에 닿지 않게 하고 닿으면 즉시 흐르는 물로 씻는다. 날숨을 불어넣을 때 용액을 빨아들이지 않도록 빨대 사용법을 지킨다. 유리 기구는 파손에 주의하고 깨진 기구는 교사에게 알린다.'},
+      {q:'[표현] 광합성 산물의 전환 · 이동 · 사용 · 저장 과정을 한 장의 정보 그림으로 표현하시오. (포함할 요소 4가지를 먼저 쓴 뒤 그리기)',
+       a:'① 잎에서 포도당 → 녹말로 임시 저장, ② 밤에 설탕 등으로 전환, ③ 체관을 통해 이동, ④ 호흡·생장에 사용되거나 기관별 형태(녹말·단백질·지방 등)로 저장.',
+       m:'인공지능 도구로 채색·완성할 경우, 도구 사용 사실과 원본 밑그림을 함께 제출하도록 안내한다. 도구 사용이 어려운 학생은 색연필 등으로 직접 채색해도 동일하게 평가한다.'}
+    ],
+    total: [
+      {q:'식물이 호흡을 하는 시간대는 언제인지 쓰시오.', a:'낮과 밤 모두(항상)'},
+      {q:'호흡이 일어나는 장소를 쓰시오.', a:'살아 있는 모든 세포'},
+      {q:'호흡의 결과 얻어지는 것을 쓰시오.', a:'생명 활동에 필요한 에너지'},
+      {q:'빛이 강한 낮에 식물에서 겉보기로 흡수되는 기체와 방출되는 기체를 쓰시오.', a:'흡수: 이산화 탄소 / 방출: 산소'},
+      {q:'밤에 식물에서 겉보기로 흡수되는 기체와 방출되는 기체를 쓰시오.', a:'흡수: 산소 / 방출: 이산화 탄소'},
+      {q:'광합성으로 처음 만들어지는 양분의 이름을 쓰시오.', a:'포도당'},
+      {q:'잎에서 양분이 임시로 저장되는 형태를 쓰시오.', a:'녹말'},
+      {q:'광합성 산물이 이동할 때의 주된 형태와 이동 통로를 쓰시오.', a:'설탕, 체관'},
+      {q:'이동한 양분이 사용되는 곳을 2가지 쓰시오.', a:'호흡의 재료(에너지 생성), 생장(몸을 구성하는 물질), 저장'},
+      {q:'고구마 · 포도 · 양파 · 콩이 양분을 저장하는 형태를 각각 쓰시오.', a:'고구마: 녹말, 포도: 포도당, 양파: 설탕, 콩: 단백질'}
+    ],
+    essay: [
+      {q:'식물이 낮에도 호흡한다는 사실을, 빛이 있을 때 관찰되는 기체 출입 결과와 연결하여 설명하시오.',
+       a:'빛이 있을 때는 광합성량이 호흡량보다 커서 겉보기에는 이산화 탄소를 흡수하고 산소를 방출하는 것처럼 보인다. 그러나 이는 두 과정의 차이가 나타난 결과일 뿐이며, 호흡은 낮에도 계속 일어나고 있다.',
+       m:'“낮에는 광합성만 한다”는 오개념을 겉보기 결과와 실제 과정의 구분으로 교정하는 문항.'},
+      {q:'빛의 세기가 새벽 → 한낮 → 저녁으로 변할 때 식물의 겉보기 기체 출입이 어떻게 달라지는지, 광합성량과 호흡량을 비교하여 설명하시오.',
+       a:'새벽(빛 없음): 호흡만 → 산소 흡수·이산화 탄소 방출. 빛이 약할 때: 광합성량 = 호흡량 → 겉보기 출입 없음. 한낮: 광합성량 > 호흡량 → 이산화 탄소 흡수·산소 방출. 저녁: 다시 광합성량 = 호흡량을 지나 호흡량이 커진다.'},
+      {q:'잎에서 만들어진 포도당이 녹말로 바뀌어 저장되었다가 다시 설탕으로 바뀌어 이동하는 까닭을, 물에 녹는 성질과 관련지어 설명하시오.',
+       a:'녹말은 물에 잘 녹지 않아 세포 속에 안정적으로 저장하기에 유리하고, 설탕은 물에 잘 녹아 체관 속의 물을 따라 이동하기에 유리하기 때문이다.'},
+      {q:'광합성과 호흡을 (가) 물질의 변화, (나) 에너지의 출입, (다) 일어나는 시기 세 가지 관점에서 비교하여 서술하시오.',
+       a:'(가) 광합성: 이산화 탄소 + 물 → 포도당 + 산소 / 호흡: 포도당 + 산소 → 이산화 탄소 + 물. (나) 광합성은 빛에너지를 흡수해 양분에 저장, 호흡은 양분의 에너지를 방출해 사용. (다) 광합성은 빛이 있을 때만, 호흡은 항상.'},
+      {q:'“밤에 화분을 침실에 두면 산소가 부족해져 위험하다”는 주장에 대해 자신의 의견을 밝히고, 근거를 들어 서술하시오.',
+       a:'밤에 식물이 호흡만 하여 산소를 흡수하고 이산화 탄소를 방출하는 것은 사실이나, 화분 몇 개가 밤 동안 소비하는 산소량은 사람의 호흡량이나 방 안의 공기량에 비해 매우 적으므로 위험하다고 보기 어렵다. 판단에는 방출·소비되는 양의 크기 비교가 필요하다.',
+       m:'개념의 방향(정성)만 맞히고 양(정량) 비교를 하지 않으면 “위험하다”는 결론에 이른다. 근거의 양적 타당성을 평가 요소로 삼는 문항.'}
+    ],
+    rubric: [
+      { el:'물질 변화 분석',
+        hi:'광합성과 호흡의 반응물·생성물을 모두 정확히 구분하여 관계식으로 나타낸다.',
+        mid:'반응물과 생성물을 대체로 구분하나 일부 물질을 혼동하거나 관계식이 불완전하다.',
+        lo:'반응물과 생성물을 구분하지 못하거나 두 과정을 뒤바꾸어 서술한다.' },
+      { el:'에너지 출입 분석',
+        hi:'광합성은 빛에너지의 흡수·저장, 호흡은 에너지의 방출·사용임을 방향까지 정확히 설명한다.',
+        mid:'두 과정의 에너지 출입을 언급하나 방향이나 용어 사용이 부정확하다.',
+        lo:'에너지 출입을 설명하지 못한다.' },
+      { el:'빛 조건에 따른 기체 출입 해석',
+        hi:'빛의 세기에 따라 광합성량과 호흡량을 비교하여 겉보기 기체 출입을 세 가지 경우로 구분해 해석한다.',
+        mid:'낮과 밤의 두 경우는 설명하나, 두 양이 같아지는 경우를 설명하지 못한다.',
+        lo:'겉보기 결과와 실제 과정을 구분하지 못한다(예: 낮에는 광합성만 한다고 진술).' },
+      { el:'광합성 산물의 전환·이동·사용',
+        hi:'포도당 → 녹말 → 설탕의 전환과 체관을 통한 이동, 사용·저장 형태를 근거를 들어 연결하여 설명한다.',
+        mid:'전환 또는 이동 중 일부만 설명하거나 이동 통로를 혼동한다.',
+        lo:'산물의 전환·이동 과정을 설명하지 못한다.' },
+      { el:'탐구 수행 (변인 통제·안전)',
+        hi:'조작·종속·통제 변인을 구분하여 설정하고, 안전 수칙을 지키며 관찰 결과를 근거로 결론을 도출한다.',
+        mid:'변인을 일부만 구분하거나, 결과 해석에서 근거 제시가 부족하다.',
+        lo:'변인을 구분하지 못하고 결과와 무관한 결론을 제시한다.' }
+    ]
   }
 };
 
-let currentUnit = '2';
-let currentType = 'total';
+/* ═══════════════ 상태 ═══════════════ */
+const TYPE_LABELS = { concept: '개념 정리 활동지', inquiry: '해 보기 활동지', total: '총괄 평가', essay: '서술형 평가' };
+const TYPE_ORDER = ['concept', 'inquiry', 'total', 'essay'];
+const LONG_TYPES = ['inquiry', 'essay'];
+const UNIT_LABELS = { '2': 'II. 물질의 구성', '3': 'III. 우리 주변의 화합물', '4': 'IV. 물질 변화와 화학 반응식', '5': 'Ⅴ. 식물과 에너지' };
+
+let currentUnit = '5';
+let currentType = 'concept';
 let isTeacher = false;
+let isRecord = false;
+let saveTimer = null;
 
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('#unitBtns .btn').forEach(b => {
-    b.addEventListener('click', function() {
-      document.querySelectorAll('#unitBtns .btn').forEach(x => x.classList.remove('active'));
-      this.classList.add('active');
-      currentUnit = this.dataset.unit;
-    });
-  });
-  document.querySelectorAll('#typeBtns .btn').forEach(b => {
-    b.addEventListener('click', function() {
-      document.querySelectorAll('#typeBtns .btn').forEach(x => x.classList.remove('active'));
-      this.classList.add('active');
-      currentType = this.dataset.type;
-    });
-  });
-});
+/* ═══════════════ 저장소 (이 기기에만 저장) ═══════════════ */
+const memStore = {};
+function stGet(k) { try { return localStorage.getItem(k); } catch (e) { return memStore[k] || null; } }
+function stSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { memStore[k] = v; } }
+function stDel(k) { try { localStorage.removeItem(k); } catch (e) { delete memStore[k]; } }
 
+const STU_KEY = 'ms2-ws:student';
+function fieldVal(id) { const el = document.getElementById(id); return el ? el.value.trim() : ''; }
+function currentStudent() {
+  const saved = loadStudent();
+  return { cls: fieldVal('stuClass') || saved.cls || '', no: fieldVal('stuNo') || saved.no || '', name: fieldVal('stuName') || saved.name || '' };
+}
+function recKey(unit, type) { return 'ms2-ws:' + (unit || currentUnit) + ':' + (type || currentType); }
+function loadRecord() { try { return JSON.parse(stGet(recKey()) || '{}'); } catch (e) { return {}; } }
+function loadStudent() { try { return JSON.parse(stGet(STU_KEY) || '{}'); } catch (e) { return {}; } }
+
+function chip(text, dirty) {
+  const el = document.getElementById('saveChip');
+  el.textContent = text;
+  el.className = 'save-chip' + (dirty ? ' dirty' : '');
+}
+
+function saveNow() {
+  const stu = currentStudent();
+  stSet(STU_KEY, JSON.stringify(stu));
+
+  const ans = {};
+  document.querySelectorAll('#worksheet [data-ans]').forEach(el => { ans[el.dataset.ans] = el.value; });
+  const obs = document.querySelector('#worksheet [data-obs]');
+  const rec = {
+    unit: currentUnit, type: currentType, student: stu, answers: ans,
+    observation: obs ? obs.value : '',
+    savedAt: new Date().toLocaleString('ko-KR')
+  };
+  stSet(recKey(), JSON.stringify(rec));
+  chip('저장됨 · ' + rec.savedAt.replace(/^.*?\s/, ''), false);
+}
+function queueSave() { if (!isRecord) return; chip('저장 중…', true); clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 600); }
+
+/* ═══════════════ 버튼 조립 ═══════════════ */
+function buildUnitBtns() {
+  const wrap = document.getElementById('unitBtns');
+  wrap.innerHTML = Object.keys(DB).map(u =>
+    '<button class="btn' + (u === currentUnit ? ' active' : '') + '" data-unit="' + u + '">' + (UNIT_LABELS[u] || DB[u].title) + '</button>'
+  ).join('');
+  wrap.querySelectorAll('.btn').forEach(b => b.addEventListener('click', function () {
+    currentUnit = this.dataset.unit;
+    buildUnitBtns(); buildTypeBtns();
+    document.getElementById('worksheet').style.display = 'none';
+  }));
+}
+function buildTypeBtns() {
+  const wrap = document.getElementById('typeBtns');
+  const avail = TYPE_ORDER.filter(t => Array.isArray(DB[currentUnit][t]) && DB[currentUnit][t].length);
+  if (avail.indexOf(currentType) === -1) currentType = avail[0];
+  wrap.innerHTML = avail.map(t =>
+    '<button class="btn' + (t === currentType ? ' active' : '') + '" data-type="' + t + '">' + TYPE_LABELS[t] + '</button>'
+  ).join('');
+  wrap.querySelectorAll('.btn').forEach(b => b.addEventListener('click', function () {
+    currentType = this.dataset.type;
+    buildTypeBtns();
+    document.getElementById('worksheet').style.display = 'none';
+  }));
+}
+
+/* ═══════════════ 토글 ═══════════════ */
 function toggleTeacher() {
   isTeacher = !isTeacher;
   document.getElementById('teacherToggle').classList.toggle('on', isTeacher);
   document.getElementById('teacherLabel').textContent = isTeacher ? '교사용' : '학생용';
   if (document.getElementById('worksheet').style.display === 'block') generateWorksheet();
 }
+function toggleRecord() {
+  isRecord = !isRecord;
+  document.getElementById('recordToggle').classList.toggle('on', isRecord);
+  document.getElementById('recordLabel').textContent = isRecord ? '켜짐' : '꺼짐';
+  document.getElementById('recBar').style.display = isRecord ? 'flex' : 'none';
+  document.getElementById('recTools').style.display = isRecord ? 'block' : 'none';
+  if (document.getElementById('worksheet').style.display === 'block') generateWorksheet();
+}
+
+/* ═══════════════ 활동지 생성 ═══════════════ */
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+function currentItems() {
+  const list = DB[currentUnit][currentType] || [];
+  const n = parseInt(document.getElementById('qCount').value, 10);
+  return list.slice(0, Math.min(n, list.length));
+}
 
 function generateWorksheet() {
   const unitData = DB[currentUnit];
-  const qList = unitData[currentType];
-  const count = parseInt(document.getElementById('qCount').value);
-  const selected = qList.slice(0, Math.min(count, qList.length));
-  const typeLabel = currentType === 'total' ? '총괄 평가' : '서술형 평가';
-  const maxScore = selected.length * (currentType === 'total' ? 5 : 10);
+  const selected = currentItems();
+  const typeLabel = TYPE_LABELS[currentType];
+  const isLong = LONG_TYPES.indexOf(currentType) !== -1;
+  const perScore = isLong ? 10 : 5;
+  const maxScore = selected.length * perScore;
+  const meta = unitData.meta;
+  const rec = isRecord ? loadRecord() : {};
+  const saved = rec.answers || {};
+  const stu = currentStudent();
 
-  let html = '<div class="ws-header"><h2>' + unitData.title + ' — ' + typeLabel + '</h2>';
-  html += '<div class="ws-info"><span>중학교 2학년 과학</span><span>이름: ______________</span><span>점수: ____ / ' + maxScore + '</span></div></div>';
+  let html = '<div class="ws-header"><h2>' + esc(unitData.title) + ' — ' + typeLabel + '</h2>';
+  html += '<div class="ws-info"><span>중학교 2학년 과학</span><span>이름: ' +
+    (isRecord && stu.name ? esc(stu.name) : '______________') + '</span><span>점수: ____ / ' + maxScore + '</span></div>';
+  if (isRecord) {
+    html += '<div class="ws-stu"><span>학급: ' + esc(stu.cls || '____') + '</span><span>번호: ' + esc(stu.no || '__') + '</span>' +
+      (rec.savedAt ? '<span>최근 저장: ' + esc(rec.savedAt) + '</span>' : '') + '</div>';
+  }
+  html += '</div>';
+
+  if (meta) {
+    html += '<div class="ws-meta"><b>차시</b> ' + esc(meta.lesson) + ' · <b>' + esc(meta.pages) + '</b><br>' +
+      '<b>학습 목표</b> ' + esc(meta.goal) + '<br><b>준비물</b> ' + esc(meta.materials);
+    if (isTeacher && meta.standardNote) html += '<br><b>성취기준</b> ' + esc(meta.standardNote);
+    html += '</div>';
+  }
 
   selected.forEach((item, idx) => {
-    let qHtml = '<div class="question"><span class="q-num">' + (idx + 1) + '.</span> ';
-    qHtml += '<span class="q-text">' + item.q + '</span>';
-    qHtml += '<div class="answer-line"></div>';
-    if (currentType === 'essay') {
-      qHtml += '<div class="answer-line"></div><div class="answer-line"></div>';
+    const key = currentType + '-' + idx;
+    let q = '<div class="question"><span class="q-num">' + (idx + 1) + '.</span> ';
+    q += '<span class="q-text">' + esc(item.q) + '</span>';
+    if (isRecord) {
+      q += isLong
+        ? '<textarea class="ans-area" rows="4" data-ans="' + key + '" placeholder="답을 쓰시오">' + esc(saved[key] || '') + '</textarea>'
+        : '<input class="ans-line" data-ans="' + key + '" value="' + esc(saved[key] || '') + '" placeholder="답을 쓰시오">';
+    } else {
+      q += '<div class="answer-line"></div>';
+      if (isLong) q += '<div class="answer-line"></div><div class="answer-line"></div>';
     }
     if (isTeacher) {
-      qHtml += '<div class="teacher-note show">✅ ' + (currentType === 'total' ? '정답: ' : '모범답안: ') + item.a + '</div>';
+      q += '<div class="teacher-note show">✅ ' + (isLong ? '모범 답안: ' : '정답: ') + esc(item.a) + '</div>';
+      if (item.m) q += '<div class="misconc show">⚠ 오개념 · 지도 유의점: ' + esc(item.m) + '</div>';
     }
-    qHtml += '</div>';
-    html += qHtml;
+    q += '</div>';
+    html += q;
   });
+
+  /* ── 교사용 채점표 (평가기록) ── */
+  if (isTeacher && unitData.rubric) {
+    html += '<div class="grade-box"><h3>📊 교사용 채점표 (과정 중심 평가)</h3>';
+    html += '<p class="sub">학습 목표 준거: ' + esc(meta ? meta.goal : '') + '</p>';
+    html += '<table class="rubric"><tr><th>평가 요소</th><th>상</th><th>중</th><th>하</th><th class="mark">판정</th></tr>';
+    unitData.rubric.forEach(r => {
+      html += '<tr><td class="el">' + esc(r.el) + '</td><td>' + esc(r.hi) + '</td><td>' + esc(r.mid) +
+        '</td><td>' + esc(r.lo) + '</td><td class="mark">상 · 중 · 하</td></tr>';
+    });
+    html += '</table>';
+    html += '<h3 style="margin-top:14px">🖊️ 관찰 사실 기록</h3>';
+    html += '<p class="sub">관찰한 행동 · 발언 · 산출물만 사실 그대로 기록합니다. 추측, 성향 평가, 과장 표현은 쓰지 않습니다.</p>';
+    if (isRecord) {
+      html += '<textarea class="obs-note" data-obs="1" placeholder="예: ㉢ 시험관을 두는 까닭을 대조군 개념으로 설명함 / 이동 통로를 물관으로 답했다가 모둠 토의 후 체관으로 수정함">' + esc(rec.observation || '') + '</textarea>';
+    } else {
+      html += '<div class="obs-note"></div>';
+    }
+    html += '<div class="caution"><b>활용 시 유의</b><br>' +
+      '· 본 채점표는 수업 설계 보조 자료이며, 성취 수준의 최종 판정과 학교생활기록부 기재 여부는 교사의 전문적 검토로 결정합니다.<br>' +
+      '· 성취기준 코드 · 배점 · 반영 비율은 학교 학업성적관리규정과 평가 계획에 맞추어 조정하십시오.<br>' +
+      '· 학교생활기록부 기재 시에는 관찰된 사실과 학생이 실제로 산출한 결과에 근거하여 서술합니다.</div>';
+    html += '</div>';
+  }
 
   const ws = document.getElementById('worksheet');
   ws.innerHTML = html;
   ws.style.display = 'block';
+
+  if (isRecord) {
+    stSet(STU_KEY, JSON.stringify(stu));
+    ws.querySelectorAll('[data-ans], [data-obs]').forEach(el => el.addEventListener('input', queueSave));
+    chip(rec.savedAt ? '저장됨 · ' + rec.savedAt : '저장 대기', !rec.savedAt);
+  }
   ws.scrollIntoView({ behavior: 'smooth' });
 }
+
+/* ═══════════════ 평가기록 내보내기 ═══════════════ */
+function recordRows() {
+  const items = currentItems();
+  const rec = loadRecord();
+  const saved = rec.answers || {};
+  return items.map((item, idx) => ({
+    no: idx + 1,
+    q: item.q,
+    a: saved[currentType + '-' + idx] || '',
+    model: item.a
+  }));
+}
+function copySummary() {
+  const stu = currentStudent(); const rec = loadRecord();
+  const head = [DB[currentUnit].title, TYPE_LABELS[currentType],
+    '학급 ' + (stu.cls || '-') + ' / 번호 ' + (stu.no || '-') + ' / 이름 ' + (stu.name || '-'),
+    '저장 시각: ' + (rec.savedAt || '-')].join(' | ');
+  const body = recordRows().map(r => r.no + '. ' + r.q + '\n   → ' + (r.a || '(미작성)')).join('\n');
+  const obs = rec.observation ? '\n\n[관찰 사실 기록]\n' + rec.observation : '';
+  const txt = head + '\n\n' + body + obs;
+  navigator.clipboard.writeText(txt).then(
+    () => chip('요약을 복사했습니다', false),
+    () => { window.prompt('아래 내용을 복사하십시오', txt); }
+  );
+}
+function downloadCSV() {
+  const stu = currentStudent(); const rec = loadRecord();
+  const q = s => '"' + String(s == null ? '' : s).replace(/"/g, '""') + '"';
+  const lines = [['학급', '번호', '이름', '단원', '활동지', '문항번호', '문항', '학생 응답', '모범 답안', '저장 시각'].map(q).join(',')];
+  recordRows().forEach(r => {
+    lines.push([stu.cls || '', stu.no || '', stu.name || '', DB[currentUnit].title, TYPE_LABELS[currentType],
+      r.no, r.q, r.a, r.model, rec.savedAt || ''].map(q).join(','));
+  });
+  if (rec.observation) lines.push(['', '', '', '', '관찰 사실 기록', '', '', rec.observation, '', rec.savedAt || ''].map(q).join(','));
+  const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ms2_' + currentUnit + '_' + currentType + '_' + (stu.name || 'record') + '.csv';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function clearRecord() {
+  if (!window.confirm('이 활동지(' + TYPE_LABELS[currentType] + ')의 저장된 응답을 모두 지울까요?')) return;
+  stDel(recKey());
+  chip('기록을 지웠습니다', true);
+  if (document.getElementById('worksheet').style.display === 'block') generateWorksheet();
+}
+
+/* ═══════════════ 시작 ═══════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  buildUnitBtns();
+  buildTypeBtns();
+  const stu = loadStudent();
+  document.getElementById('stuClass').value = stu.cls || '';
+  document.getElementById('stuNo').value = stu.no || '';
+  document.getElementById('stuName').value = stu.name || '';
+  ['stuClass', 'stuNo', 'stuName'].forEach(id => document.getElementById(id).addEventListener('input', queueSave));
+});
 </script>
 </body>
 </html>

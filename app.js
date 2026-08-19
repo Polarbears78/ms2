@@ -73,6 +73,14 @@ function renderUnits() {
         </div>
         <span class="start-arrow">열기 →</span>
       </a>
+      <a class="tool-card" href="worksheet.html">
+        <div class="tool-icon">📝</div>
+        <div class="tool-body">
+          <h3>활동지 생성기 · 평가기록</h3>
+          <p class="muted">단원별 활동지 출력 · 응답 기기 저장 · 교사용 채점표</p>
+        </div>
+        <span class="start-arrow">열기 →</span>
+      </a>
     </div>`;
 
   views.units.querySelectorAll(".unit-card.available").forEach((btn) => {
