@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>채점표 · 식물의 호흡과 광합성산물</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .wrap{max-width:900px}
+  table.rb{width:100%;border-collapse:collapse;font-size:.86rem}
+  table.rb th,table.rb td{border:1px solid var(--line);padding:7px 8px;vertical-align:top}
+  table.rb th{background:#eaf1fb;color:var(--main);font-size:.82rem}
+  table.rb td.el{background:#f7f9fc;font-weight:700;width:17%}
+  table.rb td.std{width:10%;text-align:center;white-space:nowrap;font-size:.82rem}
+  table.rb td.mk{width:9%;text-align:center;white-space:nowrap}
+  .std-box{background:#eaf1fb;border-radius:8px;padding:12px 14px;font-size:.9rem;line-height:1.7}
+  .std-box b{color:var(--main)}
+  .obs{width:100%;min-height:90px;border:1px solid var(--line);border-radius:8px;padding:9px;font-family:inherit;font-size:.92rem;line-height:1.6;resize:vertical}
+  .warn{background:#fff8e1;border:1px solid #ffc107;border-radius:8px;padding:12px 14px;font-size:.83rem;line-height:1.8;margin-top:12px}
+  .toolbar{display:flex;gap:8px;margin:10px 0}
+  .toolbar button{width:auto;padding:9px 16px;font-size:.9rem}
+  @media print{
+    header,.toolbar,.no-print{display:none!important}
+    body{background:#fff}
+    .card{border:none;padding:0;margin:10px 0}
+    table.rb tr,.card{break-inside:avoid;page-break-inside:avoid}
+    .obs{border-color:#999}
+  }
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <h1>채점표 · 2. 식물의 호흡과 광합성산물</h1>
+  <p>Ⅴ. 식물과 에너지 · 교과서 188~191쪽 · <a href="teacher.html" style="color:#cfe3ff">교사용 페이지로</a></p>
+</div></header>
+
+<div class="wrap">
+  <div class="toolbar no-print">
+    <button onclick="window.print()">🖨️ 인쇄 / PDF</button>
+  </div>
+
+  <div class="card">
+    <h2>성취기준</h2>
+    <div class="std-box">
+      <b>[9과12-02]</b> 식물의 호흡과 광합성의 관계를 이해하고, 호흡과 광합성 과정에서 출입하는 에너지와 물질의 변화를 분석할 수 있다.<br>
+      <b>[9과12-03]</b> 광합성산물의 저장과 이용 과정을 이해하고, 모형으로 설명할 수 있다.
+    </div>
+    <p class="note" style="margin-top:10px">
+      대응 활동지 — <a href="ws3.html">1차시 · 식물의 호흡과 광합성의 관계</a>(9과12-02) ·
+      <a href="ws4.html">2·3차시 · 광합성산물의 저장과 이용</a>(9과12-03)
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>평가 요소별 채점 기준 (3수준)</h2>
+    <table class="rb">
+      <tr><th>평가 요소</th><th>성취기준</th><th>상</th><th>중</th><th>하</th><th>판정</th></tr>
+      <tr>
+        <td class="el">물질 변화 분석</td><td class="std">9과12-02</td>
+        <td>광합성과 호흡의 반응물·생성물을 모두 정확히 구분하여 관계식으로 나타낸다.</td>
+        <td>반응물과 생성물을 대체로 구분하나 일부 물질을 혼동하거나 관계식이 불완전하다.</td>
+        <td>반응물과 생성물을 구분하지 못하거나 두 과정을 뒤바꾸어 서술한다.</td>
+        <td class="mk">상 · 중 · 하</td>
+      </tr>
+      <tr>
+        <td class="el">에너지 출입 분석</td><td class="std">9과12-02</td>
+        <td>두 과정의 에너지 출입 방향과 저장·사용 여부를 정확히 구분하여 설명한다.</td>
+        <td>에너지 출입을 언급하나 방향이나 용어 사용이 부정확하다.</td>
+        <td>에너지 출입을 설명하지 못한다.</td>
+        <td class="mk">상 · 중 · 하</td>
+      </tr>
+      <tr>
+        <td class="el">빛 조건에 따른<br>기체 출입 해석</td><td class="std">9과12-02</td>
+        <td>빛의 세기에 따라 두 과정의 양을 비교하여 겉보기 기체 출입을 세 가지 경우로 구분해 해석한다.</td>
+        <td>낮과 밤의 두 경우는 설명하나, 두 양이 같아지는 경우를 설명하지 못한다.</td>
+        <td>겉보기 결과와 실제로 일어나는 과정을 구분하지 못한다.</td>
+        <td class="mk">상 · 중 · 하</td>
+      </tr>
+      <tr>
+        <td class="el">광합성산물의<br>저장·이용 (모형 설명)</td><td class="std">9과12-03</td>
+        <td>산물의 전환 단계와 이동 통로를 정확히 짚어 사용·저장까지 연결하여 설명하고, 이를 모형으로 표현한다.</td>
+        <td>전환 또는 이동 중 일부만 설명하거나 이동 통로를 혼동하며, 모형 표현이 불완전하다.</td>
+        <td>산물의 저장·이용 과정을 설명하지 못한다.</td>
+        <td class="mk">상 · 중 · 하</td>
+      </tr>
+      <tr>
+        <td class="el">탐구 수행<br>(변인 통제 · 안전)</td><td class="std">공통</td>
+        <td>조작·종속·통제 변인을 구분하여 설정하고, 안전 수칙을 지키며 관찰 결과를 근거로 결론을 도출한다.</td>
+        <td>변인을 일부만 구분하거나, 결과 해석에서 근거 제시가 부족하다.</td>
+        <td>변인을 구분하지 못하고 결과와 무관한 결론을 제시한다.</td>
+        <td class="mk">상 · 중 · 하</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>관찰 사실 기록</h2>
+    <p class="note">관찰한 행동 · 발언 · 산출물만 사실 그대로 기록합니다. 추측, 성향 평가, 과장 표현은 쓰지 않습니다.</p>
+    <textarea class="obs" placeholder="예: 대조군을 두는 까닭을 모둠 토의에서 먼저 제안함 / 이동 통로를 처음에는 다르게 답했다가 자료를 확인한 뒤 스스로 수정함 / 모형에 전환 단계를 빠짐없이 표시함"></textarea>
+  </div>
+
+  <div class="card">
+    <h2>지도 시 유의점</h2>
+    <div class="warn">
+      · 본 채점표는 수업 설계 보조 자료이며, 성취 수준의 최종 판정과 학교생활기록부 기재 여부는 교사의 전문적 검토로 결정합니다.<br>
+      · 배점 · 반영 비율은 학교 학업성적관리규정과 평가 계획에 맞추어 조정하십시오.<br>
+      · 학교생활기록부 기재 시에는 관찰된 사실과 학생이 실제로 산출한 결과에 근거하여 서술합니다.<br>
+      · 모형(정보 그림) 과제에서 인공지능 도구를 사용한 경우, 도구 사용 사실과 원본 밑그림을 함께 제출하도록 안내합니다. 도구 사용이 어려운 학생이 색연필 등으로 직접 채색한 경우에도 동일한 기준으로 평가합니다.
+    </div>
+  </div>
+
+  <div class="card no-print">
+    <h2>탐구 안전 관리 (BTB 용액 · 검정말)</h2>
+    <ul class="note" style="margin:0;padding-left:18px;line-height:1.9">
+      <li>BTB 용액이 눈 · 피부에 닿지 않도록 하고, 닿으면 즉시 흐르는 물로 씻어냅니다.</li>
+      <li>날숨을 불어넣을 때 용액을 빨아들이지 않도록 빨대 사용법을 사전에 지도합니다.</li>
+      <li>유리 기구 파손에 주의하고, 깨진 기구는 학생이 직접 처리하지 않고 교사에게 알리도록 합니다.</li>
+      <li>시험관 간 온도 차가 생기면 빛의 효과와 온도의 효과가 섞이므로, 같은 수조 · 같은 위치에서 관찰하게 합니다.</li>
+    </ul>
+  </div>
+
+  <p class="note" style="margin-bottom:40px">이 페이지는 교사용입니다. 학생에게 주소를 공유하지 마십시오.</p>
+</div>
+</body>
+</html>

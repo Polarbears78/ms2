@@ -10,7 +10,7 @@
 <body>
 <header><div class="wrap">
   <h1>교사용 · 정답 공개 관리</h1>
-  <p>Ⅴ. 식물과 에너지 · 광합성 온라인 활동지</p>
+  <p>Ⅴ. 식물과 에너지 · 온라인 활동지</p>
 </div></header>
 <div class="wrap">
   <div class="card">
@@ -23,10 +23,21 @@
     <div id="stBox"><p class="note">불러오는 중...</p></div>
   </div>
   <div id="msgBox" class="result"></div>
+  <div class="card">
+    <h2>평가 자료</h2>
+    <div class="list">
+      <a href="rubric.html">📋 2. 식물의 호흡과 광합성산물 · 채점표<span>성취기준 연계 루브릭 · 관찰 기록란 · 인쇄용</span></a>
+    </div>
+  </div>
 </div>
 <script src="assets/config.js"></script>
 <script>
-const WS_NAMES = {ws1:"1·2차시 · 광합성 과정", ws2:"3·4차시 · 광합성이 잘 일어나는 조건"};
+const WS_NAMES = {
+  ws1:"1·2차시 · 광합성 과정",
+  ws2:"3·4차시 · 광합성이 잘 일어나는 조건",
+  ws3:"[호흡] 1차시 · 식물의 호흡과 광합성의 관계",
+  ws4:"[호흡] 2·3차시 · 광합성산물의 저장과 이용"
+};
 const keyEl = document.getElementById("tkey");
 keyEl.value = sessionStorage.getItem("tkey") || "";
 keyEl.addEventListener("input", () => sessionStorage.setItem("tkey", keyEl.value));
